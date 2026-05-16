@@ -66,10 +66,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
         <nav className="flex-1 space-y-1">
           <SidebarItem 
-            to="/" 
+            to="/dashboard" 
             icon={LayoutDashboard} 
             label="Dashboard" 
-            active={location.pathname === '/'} 
+            active={location.pathname === '/dashboard'} 
           />
           <SidebarItem 
             to="/patients" 

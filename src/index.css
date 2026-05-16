@@ -12,38 +12,37 @@
   --radius-3xl: 2.5rem;
   
   --color-apple-blue: #007AFF;
-  --color-apple-gray: #F2F2F7;
+  --color-apple-gray: #F5F5F7;
   --color-apple-gray-dark: #8E8E93;
-  --color-apple-glass: rgba(255, 255, 255, 0.4);
-  --color-apple-glass-border: rgba(255, 255, 255, 0.2);
+  --color-apple-glass: rgba(255, 255, 255, 0.7);
+  --color-apple-glass-border: rgba(255, 255, 255, 0.3);
 }
 
 @layer base {
   body {
     @apply text-[#1C1C1E] font-sans antialiased;
-    background: linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%);
-    background-attachment: fixed;
+    background: #FFFFFF;
   }
 }
 
 .apple-glass {
-  @apply backdrop-blur-xl bg-white/40 border border-white/20 shadow-sm;
+  @apply bg-white/80 backdrop-blur-xl border border-black/5 shadow-sm;
 }
 
 .apple-card {
-  @apply bg-white/80 backdrop-blur-md rounded-3xl shadow-sm border border-white/60 p-6 transition-all duration-300;
+  @apply bg-white rounded-3xl shadow-sm border border-black/5 p-6 transition-all duration-300;
 }
 
 .apple-card:hover {
-  @apply shadow-md border-white/80 bg-white/90;
+  @apply shadow-md border-black/10;
 }
 
 .ipad-sidebar {
-  @apply w-[280px] backdrop-blur-xl bg-white/40 border-r border-white/20 h-screen sticky top-0;
+  @apply w-[280px] bg-[#F5F5F7]/90 backdrop-blur-xl border-r border-black/5 h-screen sticky top-0;
 }
 
 .ipad-content {
-  @apply flex-1 bg-white/30 backdrop-blur-sm rounded-tl-[3rem] shadow-2xl m-2 overflow-hidden border-t border-l border-white/40;
+  @apply flex-1 bg-white rounded-tl-[2rem] shadow-[0_4px_40px_-5px_rgba(0,0,0,0.05)] m-1 mt-2 overflow-hidden border border-black/5 z-0;
 }
 
 @custom-variant dark (&:is(.dark *));

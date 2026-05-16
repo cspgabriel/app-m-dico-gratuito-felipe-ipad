@@ -123,9 +123,10 @@ export default function PatientDetails() {
       </header>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-white/40 backdrop-blur-md p-1 rounded-xl w-full max-w-md border border-white/20">
+        <TabsList className="bg-white/40 backdrop-blur-md p-1 rounded-xl w-full max-w-2xl border border-white/20">
           <TabsTrigger value="overview" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Visão Geral</TabsTrigger>
           <TabsTrigger value="consultations" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Consultas ({consultations.length})</TabsTrigger>
+          <TabsTrigger value="exams" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Exames</TabsTrigger>
           <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Histórico</TabsTrigger>
         </TabsList>
 
@@ -255,6 +256,44 @@ export default function PatientDetails() {
                 <p>{patient.medicacoes || 'Nenhuma medicação informada.'}</p>
               </div>
             </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="exams" className="mt-6">
+          <Card className="apple-card border-none shadow-sm p-8">
+            <h3 className="font-bold mb-4">Exames e Uploads</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/60 rounded-xl border border-white/80">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-red-500/10 rounded-xl">
+                    <FileText className="text-red-500" size={24} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold block">Hemograma_Completo.pdf</span>
+                    <span className="text-xs text-apple-gray-dark">PDF • 1.2 MB • Enviado em 14 Ago 2025</span>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="hover:bg-white/50 rounded-lg"><Download size={18} /></Button>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-white/60 rounded-xl border border-white/80">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-500/10 rounded-xl">
+                    <FileText className="text-green-500" size={24} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold block">RaioX_Torax.jpeg</span>
+                    <span className="text-xs text-apple-gray-dark">IMG • 4.8 MB • Enviado em 02 Jul 2025</span>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="hover:bg-white/50 rounded-lg"><Download size={18} /></Button>
+              </div>
+            </div>
+
+            <Button className="mt-6 w-full py-6 apple-glass border-2 border-dashed border-[#D1D1D6] text-apple-gray-dark hover:bg-white/60 hover:text-black hover:border-black/20 text-sm font-bold uppercase tracking-wider transition-all">
+              Arraste arquivos aqui ou clique para fazer upload
+            </Button>
           </Card>
         </TabsContent>
       </Tabs>

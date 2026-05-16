@@ -68,18 +68,21 @@ export default function Dashboard() {
           label="Total de Pacientes" 
           value={stats.patients.toString()} 
           color="bg-blue-500" 
+          borderColorClass="border-l-blue-500"
         />
         <StatCard 
           icon={Calendar} 
           label="Consultas este mês" 
           value="12" 
           color="bg-green-500" 
+          borderColorClass="border-l-green-500"
         />
         <StatCard 
           icon={Activity} 
-          label="Anamneses Intitativas" 
+          label="Prontuários Finalizados" 
           value="08" 
           color="bg-orange-500" 
+          borderColorClass="border-l-orange-500"
         />
       </div>
 
@@ -141,9 +144,9 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) {
+function StatCard({ icon: Icon, label, value, color, borderColorClass }: { icon: any, label: string, value: string, color: string, borderColorClass: string }) {
   return (
-    <Card className="rounded-2xl border-none shadow-sm apple-card border-l-4 overflow-hidden" style={{ borderLeftColor: color.replace('bg-', '') }}>
+    <Card className={`rounded-2xl shadow-sm apple-card border-none border-l-4 ${borderColorClass} overflow-hidden`}>
       <CardContent className="pt-6">
         <div className="flex items-center gap-4">
           <div className={`p-3 rounded-xl ${color} text-white`}>

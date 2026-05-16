@@ -31,6 +31,15 @@ const CID_MOCK = [
   { codigo: 'Z00', descricao: 'Exame médico geral' }
 ];
 
+// Mock TUSS data
+const TUSS_MOCK = [
+  { codigo: '10101012', descricao: 'Consulta em consultório (no horário normal ou preestabelecido)' },
+  { codigo: '10101020', descricao: 'Consulta em domicílio' },
+  { codigo: '10101039', descricao: 'Consulta em pronto-socorro' },
+  { codigo: '20104049', descricao: 'Avaliação clínica e eletroneuromiográfica' },
+  { codigo: '20104235', descricao: 'Polissonografia de noite inteira' }
+];
+
 export default function ConsultationPage() {
   const { patientId } = useParams();
   const [searchParams] = useSearchParams();
@@ -46,6 +55,10 @@ export default function ConsultationPage() {
   const [conduta, setConduta] = useState('');
   const [cidSearch, setCidSearch] = useState('');
   const [selectedCids, setSelectedCids] = useState<string[]>([]);
+  
+  const [tussSearch, setTussSearch] = useState('');
+  const [selectedTuss, setSelectedTuss] = useState<string[]>([]);
+
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiInput, setAiInput] = useState('');
 
@@ -75,11 +88,11 @@ export default function ConsultationPage() {
       setHda(data.hda || '');
       setExameFisico(data.exameFisico || '');
       setConduta(data.conduta || '');
-      toast.success('IA processou as informações com sucesso!');
+      toast.success('Informações processadas e organizadas com sucesso!');
       setAiInput('');
     } catch (err) {
       console.error(err);
-      toast.error('Erro ao processar com IA.');
+      toast.error('Erro ao processar as informações.');
     } finally {
       setIsAiProcessing(false);
     }
@@ -105,6 +118,7 @@ export default function ConsultationPage() {
           exameFisico,
           conduta,
           cid10: selectedCids,
+          tuss: selectedTuss,
           userId: user.uid
         });
       }
@@ -140,12 +154,12 @@ export default function ConsultationPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-md flex items-center gap-2">
                 <Sparkles size={18} className="text-apple-blue" />
-                Anamnese Inteligente (IA)
+                Anamnese Estruturada Automática
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea 
-                placeholder="Cole aqui o texto da consulta ou fale as observações para a IA organizar..."
+                placeholder="Cole aqui o texto da consulta ou dite as observações para o sistema organizar..."
                 className="min-h-[120px] rounded-xl bg-white/40 border border-white/20 focus-visible:ring-apple-blue resize-none"
                 value={aiInput}
                 onChange={e => setAiInput(e.target.value)}
@@ -155,7 +169,7 @@ export default function ConsultationPage() {
                 className="w-full bg-white/60 hover:bg-white/80 text-[#007AFF] font-bold rounded-xl gap-2 border-none backdrop-blur-sm"
                 disabled={isAiProcessing}
               >
-                {isAiProcessing ? 'Processando...' : 'Organizar com IA'}
+                {isAiProcessing ? 'Processando...' : 'Organizar Automaticamente'}
               </Button>
             </CardContent>
           </Card>
@@ -261,11 +275,39 @@ export default function ConsultationPage() {
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
                 <CheckCircle2 size={16} />
-                Resumo da Guia (TUSS)
+                Procedimentos (TUSS)
               </CardTitle>
             </CardHeader>
-            <CardContent>
-               <p className="text-xs text-apple-gray-dark italic">Módulo de faturamento TUSS em breve...</p>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 text-apple-gray-dark" size={16} />
+                <Input 
+                  placeholder="Pesquisar procedimento TUSS..." 
+                  className="pl-8 h-9 rounded-lg text-sm apple-glass border-none"
+                  value={tussSearch}
+                  onChange={e => setTussSearch(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1 max-h-[150px] overflow-y-auto pr-1">
+                {TUSS_MOCK.filter(t => t.descricao.toLowerCase().includes(tussSearch.toLowerCase()) || t.codigo.includes(tussSearch)).map(t => (
+                  <div 
+                    key={t.codigo} 
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-apple-gray cursor-pointer text-xs"
+                    onClick={() => !selectedTuss.includes(t.codigo) && setSelectedTuss([...selectedTuss, t.codigo])}
+                  >
+                    <span className="font-bold w-16">{t.codigo}</span>
+                    <span className="text-apple-gray-dark truncate flex-1 ml-2">{t.descricao}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-black/5">
+                {selectedTuss.map(code => (
+                  <div key={code} className="bg-green-500/10 text-green-600 px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1">
+                    {code}
+                    <button onClick={() => setSelectedTuss(selectedTuss.filter(t => t !== code))}>×</button>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
