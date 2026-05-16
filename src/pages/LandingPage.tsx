@@ -93,50 +93,42 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          {/* Right Column (Mockup) */}
-          <motion.div 
+          {/* Right Column — Dashboard Mockup */}
+          <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="flex-1 w-full max-w-2xl relative mt-12 lg:mt-0"
           >
-            {/* Desktop Mockup */}
-            <div className="rounded-[30px] border-[6px] border-white/40 bg-white shadow-2xl relative ring-1 ring-black/5 aspect-[16/10] overflow-hidden">
-               <div className="absolute top-0 w-full h-10 bg-[#F8F9FA] border-b flex items-center px-4 gap-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                 <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                 <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-               </div>
-               <div className="mt-10 p-4 bg-[#FAFAFC] h-full flex gap-4">
-                 <div className="w-32 bg-white rounded-xl shadow-sm border border-gray-100 p-2 space-y-2 hidden sm:block">
-                   <div className="h-6 w-6 bg-blue-500 rounded-md mb-4"></div>
-                   <div className="h-3 w-3/4 bg-gray-100 rounded"></div>
-                   <div className="h-3 w-full bg-gray-100 rounded"></div>
-                   <div className="h-3 w-5/6 bg-gray-100 rounded"></div>
-                 </div>
-                 <div className="flex-1 space-y-4">
-                   <div className="h-8 w-1/2 bg-gray-200 rounded-md"></div>
-                   <div className="flex gap-2">
-                      <div className="h-16 flex-1 bg-white rounded-xl shadow-sm border border-gray-100"></div>
-                      <div className="h-16 flex-1 bg-white rounded-xl shadow-sm border border-gray-100"></div>
-                   </div>
-                   <div className="h-40 w-full bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-3">
-                     <div className="h-3 w-full bg-gray-100 rounded"></div>
-                     <div className="h-3 w-5/6 bg-gray-100 rounded"></div>
-                     <div className="h-3 w-4/6 bg-gray-100 rounded"></div>
-                   </div>
-                 </div>
-               </div>
-            </div>
+            <DashboardMockup />
 
             {/* Mobile Mockup overlay */}
-            <div className="absolute -bottom-6 -left-6 w-32 md:w-40 aspect-[9/19] rounded-[24px] border-[4px] border-gray-800 bg-white shadow-2xl overflow-hidden ring-1 ring-black/10 z-10 hidden sm:block">
-              <div className="h-4 w-full bg-gray-800 rounded-b-xl mx-auto absolute top-0 left-0 right-0 max-w-[50%]"></div>
-              <div className="mt-6 p-2 space-y-2">
-                <div className="h-6 w-6 bg-blue-500 rounded-md"></div>
-                <div className="h-8 w-full bg-gray-100 rounded-md"></div>
-                <div className="h-12 w-full bg-white border border-gray-100 shadow-sm rounded-md border-l-2 border-l-blue-500"></div>
-                <div className="h-12 w-full bg-white border border-gray-100 shadow-sm rounded-md"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 md:w-40 aspect-[9/19] rounded-[24px] border-[4px] border-gray-900 bg-white shadow-2xl overflow-hidden ring-1 ring-black/10 z-20 hidden sm:block">
+              <div className="h-4 w-full bg-gray-900 rounded-b-xl mx-auto absolute top-0 left-0 right-0 max-w-[50%]"></div>
+              <div className="mt-6 p-2 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-blue-600 rounded"></div>
+                  <div className="h-2 w-12 bg-gray-200 rounded"></div>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-1.5 space-y-1">
+                  <div className="h-2 w-3/4 bg-gray-300 rounded"></div>
+                  <div className="h-1.5 w-1/2 bg-gray-200 rounded"></div>
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="bg-white border border-gray-100 rounded p-1">
+                    <div className="h-1.5 w-3/4 bg-gray-200 rounded mb-0.5"></div>
+                    <div className="h-2.5 w-1/2 bg-gray-800 rounded"></div>
+                  </div>
+                  <div className="bg-white border border-gray-100 rounded p-1">
+                    <div className="h-1.5 w-3/4 bg-emerald-200 rounded mb-0.5"></div>
+                    <div className="h-2.5 w-1/2 bg-gray-800 rounded"></div>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-100 rounded p-1 space-y-1">
+                  <div className="h-1.5 w-1/2 bg-gray-800 rounded"></div>
+                  <div className="h-1 w-3/4 bg-gray-200 rounded"></div>
+                  <div className="h-1 w-2/3 bg-gray-200 rounded"></div>
+                </div>
               </div>
             </div>
 
@@ -616,6 +608,170 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function DashboardMockup() {
+  return (
+    <div className="rounded-[24px] sm:rounded-[30px] border-[6px] border-white/40 bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden relative">
+      {/* Browser chrome */}
+      <div className="h-9 bg-[#F8F9FA] border-b border-gray-100 flex items-center px-4 gap-2">
+        <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+        <div className="ml-3 px-3 py-1 rounded-md bg-white border border-gray-200 text-[10px] text-gray-400 font-medium flex-1 max-w-[260px] truncate">
+          medsystem.app/dashboard
+        </div>
+      </div>
+
+      <div className="flex bg-[#F8F9FA]">
+        {/* Sidebar */}
+        <aside className="w-[110px] sm:w-[140px] bg-white border-r border-gray-100 p-2.5 sm:p-3 hidden sm:flex flex-col gap-1">
+          <div className="flex items-center gap-2 mb-3 px-1.5">
+            <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center text-white">
+              <ClipboardList size={12} />
+            </div>
+            <span className="text-[10px] font-black text-gray-800">Clínica</span>
+          </div>
+          <div className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-2 py-1.5">
+            <div className="w-3 h-3 bg-white/30 rounded"></div>
+            <span className="text-[9px] font-bold">Dashboard</span>
+          </div>
+          {['Clínica', 'Relatórios', 'Marketing', 'Equipe', 'Faturamento', 'Config.'].map((l) => (
+            <div key={l} className="flex items-center gap-2 px-2 py-1.5 text-gray-500">
+              <div className="w-3 h-3 bg-gray-200 rounded"></div>
+              <span className="text-[9px] font-semibold">{l}</span>
+            </div>
+          ))}
+        </aside>
+
+        {/* Main */}
+        <div className="flex-1 p-3 sm:p-4 space-y-3 min-w-0">
+          {/* Hero card */}
+          <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/60 p-3 sm:p-4 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-1">
+                <p className="text-[11px] sm:text-sm font-black text-gray-900 truncate">
+                  Olá, Dr(a). Felipe
+                </p>
+                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[7px] px-1.5 py-0.5 rounded-full font-bold uppercase flex items-center gap-0.5">
+                  <Star size={7} /> Pro
+                </span>
+              </div>
+              <p className="text-[9px] text-gray-500 hidden sm:block">
+                Resumo da sua clínica hoje.
+              </p>
+            </div>
+            <div className="flex gap-1.5 shrink-0">
+              <div className="px-2 py-1 rounded-md border border-blue-200 text-blue-600 text-[8px] font-bold whitespace-nowrap">
+                + Paciente
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { l: 'Pacientes', v: '147', c: 'blue' },
+              { l: 'Realizadas', v: '28', c: 'emerald' },
+              { l: 'Desmarcadas', v: '3', c: 'amber' },
+              { l: 'Agendadas', v: '12', c: 'purple' },
+            ].map((s) => (
+              <div
+                key={s.l}
+                className="bg-white rounded-lg border border-gray-100 p-1.5 sm:p-2"
+              >
+                <div
+                  className={`w-5 h-5 rounded-md mb-1 flex items-center justify-center ${
+                    s.c === 'blue'
+                      ? 'bg-blue-100 text-blue-600'
+                      : s.c === 'emerald'
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : s.c === 'amber'
+                      ? 'bg-amber-100 text-amber-600'
+                      : 'bg-purple-100 text-purple-600'
+                  }`}
+                >
+                  <div className="w-2 h-2 bg-current rounded-sm opacity-70"></div>
+                </div>
+                <p className="text-[7px] sm:text-[8px] font-bold text-gray-500 uppercase tracking-wider truncate">
+                  {s.l}
+                </p>
+                <p className="text-base sm:text-lg font-black text-gray-900 leading-none mt-0.5">
+                  {s.v}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom: recent patients + agenda */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-2 bg-white rounded-lg border border-gray-100 p-2 sm:p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] sm:text-xs font-black text-gray-900">
+                  Pacientes Recentes
+                </p>
+                <span className="text-[8px] text-blue-600 font-bold">Ver todos ›</span>
+              </div>
+              <div className="space-y-1.5">
+                {[
+                  { n: 'Ana Silva', i: 'AS', c: 'bg-blue-100 text-blue-600', d: 'Há 2h' },
+                  { n: 'Carlos Santos', i: 'CS', c: 'bg-emerald-100 text-emerald-600', d: 'Ontem' },
+                  { n: 'Maria Oliveira', i: 'MO', c: 'bg-purple-100 text-purple-600', d: '2 dias' },
+                ].map((p) => (
+                  <div
+                    key={p.n}
+                    className="flex items-center gap-2 py-1 border-b border-gray-50 last:border-0"
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center text-[8px] font-black ${p.c}`}
+                    >
+                      {p.i}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-900 truncate">
+                        {p.n}
+                      </p>
+                      <p className="text-[7px] text-gray-400 font-medium">{p.d}</p>
+                    </div>
+                    <ChevronRight size={10} className="text-gray-300" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-100 p-2 sm:p-3">
+              <p className="text-[10px] sm:text-xs font-black text-gray-900 mb-2">
+                Agenda
+              </p>
+              <div className="space-y-1.5">
+                {[
+                  { d: '14', m: 'mai', h: '09:00', n: 'João P.', c: 'bg-blue-50 border-blue-100' },
+                  { d: '14', m: 'mai', h: '10:30', n: 'Marta L.', c: 'bg-blue-50 border-blue-100' },
+                  { d: '15', m: 'mai', h: '14:00', n: 'Lucas T.', c: 'bg-emerald-50 border-emerald-100' },
+                ].map((a, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-1.5 p-1 rounded border ${a.c}`}
+                  >
+                    <div className="flex flex-col items-center bg-white rounded px-1 py-0.5 border border-gray-100">
+                      <span className="text-[6px] uppercase font-bold text-gray-400 tracking-wider">
+                        {a.m}
+                      </span>
+                      <span className="text-[9px] font-black leading-none">{a.d}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[8px] font-bold text-gray-800 truncate">{a.n}</p>
+                      <p className="text-[7px] text-gray-500 font-medium">{a.h}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
