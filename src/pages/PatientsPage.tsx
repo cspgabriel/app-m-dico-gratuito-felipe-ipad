@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
 import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Search, UserPlus, FileText, MoreHorizontal } from 'lucide-react';
+import { Search, UserPlus, FileText, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
@@ -22,6 +22,13 @@ export default function PatientsPage() {
   // New patient state
   const [newName, setNewName] = useState('');
   const [newCpf, setNewCpf] = useState('');
+  const [newTelefone, setNewTelefone] = useState('');
+  const [newNascimento, setNewNascimento] = useState('');
+  const [newSexo, setNewSexo] = useState<'M' | 'F' | 'Outro'>('M');
+  const [newConvenio, setNewConvenio] = useState('');
+  const [newAlergias, setNewAlergias] = useState('');
+  const [newMedicacoes, setNewMedicacoes] = useState('');
+  const [newHistorico, setNewHistorico] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -29,12 +36,12 @@ export default function PatientsPage() {
 
     const q = query(
       collection(db, 'pacientes'),
-      where('userId', '==', user.uid),
-      orderBy('nome', 'asc')
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paciente));
+      data.sort((a, b) => a.nome.localeCompare(b.nome));
       setPatients(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'pacientes');
@@ -58,6 +65,13 @@ export default function PatientsPage() {
       await addDoc(collection(db, 'pacientes'), {
         nome: newName,
         cpf: newCpf,
+        telefone: newTelefone,
+        nascimento: newNascimento,
+        sexo: newSexo,
+        convenio: newConvenio,
+        alergias: newAlergias,
+        medicacoes: newMedicacoes,
+        historico: newHistorico,
         userId: user.uid,
         createdAt: now,
         updatedAt: now,
@@ -66,9 +80,77 @@ export default function PatientsPage() {
       setIsModalOpen(false);
       setNewName('');
       setNewCpf('');
+      setNewTelefone('');
+      setNewNascimento('');
+      setNewSexo('M');
+      setNewConvenio('');
+      setNewAlergias('');
+      setNewMedicacoes('');
+      setNewHistorico('');
     } catch (err) {
       console.error(err);
       toast.error('Erro ao cadastrar paciente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const seedMockData = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const mocks = [
+        {
+          nome: "Maria das Graças Oliveira",
+          cpf: "123.456.789-00",
+          telefone: "(11) 98765-4321",
+          nascimento: "1965-04-12",
+          sexo: "F" as const,
+          convenio: "Unimed",
+          alergias: "Iodo, Dipirona",
+          medicacoes: "Losartana 50mg, AAS 100mg",
+          historico: "Hipertensa há 10 anos. HAS bem controlada.",
+          userId: user.uid,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          nome: "Roberto Carlos Santos",
+          cpf: "987.654.321-11",
+          telefone: "(21) 91234-5678",
+          nascimento: "1980-11-20",
+          sexo: "M" as const,
+          convenio: "Amil",
+          alergias: "",
+          medicacoes: "Omeprazol 20mg",
+          historico: "Gastrite esporádica. Sem comorbidades graves.",
+          userId: user.uid,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          nome: "Aline Ferreira Lima",
+          cpf: "456.123.789-22",
+          telefone: "(31) 99999-8888",
+          nascimento: "1995-08-05",
+          sexo: "F" as const,
+          convenio: "Particular",
+          alergias: "Penicilina",
+          medicacoes: "Nenhuma",
+          historico: "Paciente hígida.",
+          userId: user.uid,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      ];
+
+      for (const mock of mocks) {
+        await addDoc(collection(db, 'pacientes'), mock);
+      }
+      toast.success('Pacientes de teste gerados com sucesso!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao gerar pacientes.');
     } finally {
       setLoading(false);
     }
@@ -82,36 +164,106 @@ export default function PatientsPage() {
           <p className="text-apple-gray-dark">Gerencie seus pacientes e prontuários</p>
         </div>
         
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20">
-              <UserPlus size={20} />
-              Novo Paciente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="rounded-2xl sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Cadastro de Paciente</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreatePatient} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nome Completo</label>
-                <Input 
-                  placeholder="Ex: João da Silva" 
-                  value={newName} 
-                  onChange={e => setNewName(e.target.value)}
-                  className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">CPF (Opcional)</label>
-                <Input 
-                  placeholder="000.000.000-00" 
-                  value={newCpf} 
-                  onChange={e => setNewCpf(e.target.value)}
-                  className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
-                />
+        <div className="flex gap-4">
+          <Button 
+            variant="outline" 
+            onClick={seedMockData} 
+            disabled={loading}
+            className="rounded-xl gap-2"
+          >
+            <Database size={20} />
+            Gerar Exemplos
+          </Button>
+
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20">
+                <UserPlus size={20} />
+                Novo Paciente
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-2xl sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Cadastro de Paciente</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreatePatient} className="space-y-6 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Nome Completo</label>
+                  <Input 
+                    placeholder="Ex: João da Silva" 
+                    value={newName} 
+                    onChange={e => setNewName(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">CPF</label>
+                  <Input 
+                    placeholder="000.000.000-00" 
+                    value={newCpf} 
+                    onChange={e => setNewCpf(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Data de Nascimento</label>
+                  <Input 
+                    type="date"
+                    value={newNascimento} 
+                    onChange={e => setNewNascimento(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sexo</label>
+                  <select 
+                    value={newSexo}
+                    onChange={e => setNewSexo(e.target.value as any)}
+                    className="w-full flex h-10 w-full items-center justify-between rounded-xl border border-apple-gray bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-apple-blue disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Telefone</label>
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    value={newTelefone} 
+                    onChange={e => setNewTelefone(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Convênio</label>
+                  <Input 
+                    placeholder="Ex: Unimed, Amil..." 
+                    value={newConvenio} 
+                    onChange={e => setNewConvenio(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2 col-span-1 md:col-span-2">
+                  <label className="text-sm font-medium">Alergias</label>
+                  <Input 
+                    placeholder="Ex: Penicilina, Dipirona..." 
+                    value={newAlergias} 
+                    onChange={e => setNewAlergias(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue text-red-500"
+                  />
+                </div>
+                <div className="space-y-2 col-span-1 md:col-span-2">
+                  <label className="text-sm font-medium">Medicações em uso</label>
+                  <Input 
+                    placeholder="Ex: Losartana 50mg..." 
+                    value={newMedicacoes} 
+                    onChange={e => setNewMedicacoes(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="rounded-xl">Cancelar</Button>
@@ -122,6 +274,7 @@ export default function PatientsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="relative">

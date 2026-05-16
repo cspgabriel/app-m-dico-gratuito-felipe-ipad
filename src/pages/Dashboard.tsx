@@ -20,29 +20,29 @@ export default function Dashboard() {
 
     const patientsQuery = query(
       collection(db, 'pacientes'),
-      where('userId', '==', user.uid),
-      orderBy('updatedAt', 'desc'),
-      limit(5)
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(patientsQuery, (snapshot) => {
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paciente));
-      setRecentPatients(docs);
+      docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setRecentPatients(docs.slice(0, 5));
+      setStats(prev => ({ ...prev, patients: docs.length }));
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'pacientes');
     });
 
-    // Simple count (in production use metadata document or server-side count)
-    const fetchStats = async () => {
+    // Just fetch appointments stat independently if needed
+    const fetchAppointmentsStat = async () => {
       try {
-        const q = query(collection(db, 'pacientes'), where('userId', '==', user.uid));
+        const q = query(collection(db, 'consultas'), where('userId', '==', user.uid));
         const snapshot = await getDocs(q);
-        setStats({ patients: snapshot.size, appointments: 0 }); // Placeholder for appointments
+        setStats(prev => ({ ...prev, appointments: snapshot.size }));
       } catch (err) {
         console.error(err);
       }
     };
-    fetchStats();
+    fetchAppointmentsStat();
 
     return unsubscribe;
   }, [user]);
@@ -72,8 +72,8 @@ export default function Dashboard() {
         />
         <StatCard 
           icon={Calendar} 
-          label="Consultas este mês" 
-          value="12" 
+          label="Consultas cadastradas" 
+          value={stats.appointments.toString()} 
           color="bg-green-500" 
           borderColorClass="border-l-green-500"
         />

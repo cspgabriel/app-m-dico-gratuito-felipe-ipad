@@ -1,14 +1,14 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 async function startServer() {
   const app = express();
@@ -28,7 +28,6 @@ async function startServer() {
       const { text } = req.body;
       if (!text) return res.status(400).json({ error: "Text is required" });
 
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const prompt = `
         Você é um assistente médico especializado em organização de prontuários.
         Transforme o seguinte texto (que pode ser uma fala de um médico ou anotações rápidas) em um prontuário estruturado.
@@ -47,9 +46,13 @@ async function startServer() {
         Apenas o JSON, sem markdown.
       `;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const jsonText = response.text().replace(/```json|```/g, "").trim();
+      const response = await genai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+      });
+      
+      let jsonText = response.text || "";
+      jsonText = jsonText.replace(/```json|```/g, "").trim();
       res.json(JSON.parse(jsonText));
     } catch (error) {
       console.error("Gemini Error:", error);

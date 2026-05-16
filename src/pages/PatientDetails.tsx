@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Paciente, Anamnese, Consulta } from '../types';
+import { 
+  doc, 
+  getDoc, 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot,
+  addDoc 
+} from 'firebase/firestore';
+import { db, storage } from '../lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '../components/FirebaseProvider';
+import { Paciente, Anamnese, Consulta, Exame } from '../types';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -21,11 +31,15 @@ import { generatePDF } from '../lib/pdf-service';
 import { toast } from 'sonner';
 
 export default function PatientDetails() {
+  const { user } = useAuth();
   const { id } = useParams();
   const [patient, setPatient] = useState<Paciente | null>(null);
   const [consultations, setConsultations] = useState<Consulta[]>([]);
   const [anamneses, setAnamneses] = useState<Anamnese[]>([]);
+  const [exams, setExams] = useState<Exame[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -60,10 +74,19 @@ export default function PatientDetails() {
       setAnamneses(snap.docs.map(d => ({ id: d.id, ...d.data() } as Anamnese)));
     });
 
+    const qExams = query(
+      collection(db, `pacientes/${id}/exames`),
+      orderBy('dataUpload', 'desc')
+    );
+    const unsubExams = onSnapshot(qExams, (snap) => {
+      setExams(snap.docs.map(d => ({ id: d.id, ...d.data() } as Exame)));
+    });
+
     fetchPatient();
     return () => {
       unsubConsultations();
       unsubAnamneses();
+      unsubExams();
     };
   }, [id]);
 
@@ -75,6 +98,51 @@ export default function PatientDetails() {
     } catch (err) {
       console.error(err);
       toast.error('Erro ao gerar PDF.');
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id || !user) return;
+
+    try {
+      setUploading(true);
+      const storageRef = ref(storage, `exames/${id}/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error(error);
+          toast.error('Erro ao fazer upload do arquivo.');
+          setUploading(false);
+          setUploadProgress(0);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          await addDoc(collection(db, `pacientes/${id}/exames`), {
+            pacienteId: id,
+            nome: file.name,
+            url: downloadURL,
+            tipo: file.type,
+            tamanho: file.size,
+            userId: user.uid,
+            dataUpload: new Date().toISOString()
+          });
+          toast.success('Exame salvo com sucesso!');
+          setUploading(false);
+          setUploadProgress(0);
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao iniciar upload.');
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -264,36 +332,45 @@ export default function PatientDetails() {
             <h3 className="font-bold mb-4">Exames e Uploads</h3>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white/60 rounded-xl border border-white/80">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-red-500/10 rounded-xl">
-                    <FileText className="text-red-500" size={24} />
+              {exams.length > 0 ? exams.map(exame => (
+                <div key={exame.id} className="flex items-center justify-between p-4 bg-white/60 rounded-xl border border-white/80">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl ${exame.tipo.includes('pdf') ? 'bg-red-500/10' : 'bg-green-500/10'}`}>
+                      <FileText className={exame.tipo.includes('pdf') ? 'text-red-500' : 'text-green-500'} size={24} />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold block">{exame.nome}</span>
+                      <span className="text-xs text-apple-gray-dark">
+                        {exame.tipo.includes('pdf') ? 'PDF' : 'IMG'} • {(exame.tamanho / 1024 / 1024).toFixed(2)} MB • Enviado em {new Date(exame.dataUpload).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-sm font-bold block">Hemograma_Completo.pdf</span>
-                    <span className="text-xs text-apple-gray-dark">PDF • 1.2 MB • Enviado em 14 Ago 2025</span>
-                  </div>
+                  <a href={exame.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="sm" className="hover:bg-white/50 rounded-lg"><Download size={18} /></Button>
+                  </a>
                 </div>
-                <Button variant="ghost" size="sm" className="hover:bg-white/50 rounded-lg"><Download size={18} /></Button>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-white/60 rounded-xl border border-white/80">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-xl">
-                    <FileText className="text-green-500" size={24} />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold block">RaioX_Torax.jpeg</span>
-                    <span className="text-xs text-apple-gray-dark">IMG • 4.8 MB • Enviado em 02 Jul 2025</span>
-                  </div>
+              )) : (
+                <div className="text-center py-6">
+                  <p className="text-sm text-apple-gray-dark italic">Nenhum exame anexado.</p>
                 </div>
-                <Button variant="ghost" size="sm" className="hover:bg-white/50 rounded-lg"><Download size={18} /></Button>
-              </div>
+              )}
             </div>
 
-            <Button className="mt-6 w-full py-6 apple-glass border-2 border-dashed border-[#D1D1D6] text-apple-gray-dark hover:bg-white/60 hover:text-black hover:border-black/20 text-sm font-bold uppercase tracking-wider transition-all">
-              Arraste arquivos aqui ou clique para fazer upload
-            </Button>
+            <div className="mt-6 relative">
+              <input 
+                type="file" 
+                id="examUpload" 
+                className="hidden" 
+                onChange={handleFileUpload}
+                accept="image/*,application/pdf"
+              />
+              <label 
+                htmlFor="examUpload"
+                className="block w-full text-center py-6 apple-glass border-2 border-dashed border-[#D1D1D6] text-apple-gray-dark hover:bg-white/60 hover:text-black hover:border-black/20 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer rounded-xl"
+              >
+                {uploading ? `Enviando... ${Math.round(uploadProgress)}%` : 'Clique ou arraste um arquivo para upload'}
+              </label>
+            </div>
           </Card>
         </TabsContent>
       </Tabs>

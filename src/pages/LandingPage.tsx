@@ -136,27 +136,7 @@ export default function LandingPage() {
             </Link>
           </motion.div>
 
-          {/* Screenshot Mockup */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 1 }}
-            className="pt-20 relative"
-          >
-             <div className="relative mx-auto rounded-[3rem] border-[12px] border-black p-2 bg-black shadow-2xl overflow-hidden aspect-[4/3] max-w-5xl group">
-                <img 
-                  src="https://images.unsplash.com/photo-1576091160550-217359f4ecf8?q=80&w=2070&auto=format&fit=crop" 
-                  alt="Interface MedSystem iPad" 
-                  className="w-full h-full object-cover rounded-[2.5rem] brightness-90 group-hover:scale-105 transition-transform duration-1000"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-12">
-                   <div className="text-white text-left">
-                      <p className="text-2xl font-bold">Medicina sem burocracia.</p>
-                      <p className="text-white/60">Seu consultório fluindo na velocidade do seu raciocínio clínico.</p>
-                   </div>
-                </div>
-             </div>
-          </motion.div>
+
         </div>
       </section>
 

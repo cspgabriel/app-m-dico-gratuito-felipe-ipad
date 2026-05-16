@@ -44,6 +44,9 @@ service cloud.firestore {
       match /prescricoes/{id} {
         allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
+      match /exames/{id} {
+        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
+      }
     }
   }
 }

@@ -22,6 +22,7 @@ import { signOut } from 'firebase/auth';
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PatientsPage = lazy(() => import('./pages/PatientsPage'));
+const ConsultationsList = lazy(() => import('./pages/ConsultationsList'));
 const PatientDetails = lazy(() => import('./pages/PatientDetails'));
 const ConsultationPage = lazy(() => import('./pages/ConsultationPage'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -75,7 +76,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             to="/patients" 
             icon={Users} 
             label="Pacientes" 
-            active={location.pathname.startsWith('/patients')} 
+            active={location.pathname === '/patients' || location.pathname.startsWith('/patients/')} 
+          />
+          <SidebarItem 
+            to="/consultations" 
+            icon={ClipboardList} 
+            label="Consultas" 
+            active={location.pathname === '/consultations'} 
           />
           <SidebarItem 
             to="/settings" 
@@ -141,6 +148,7 @@ export default function App() {
             <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
             <Route path="/patients" element={<MainLayout><PatientsPage /></MainLayout>} />
             <Route path="/patients/:id" element={<MainLayout><PatientDetails /></MainLayout>} />
+            <Route path="/consultations" element={<MainLayout><ConsultationsList /></MainLayout>} />
             <Route path="/consultation/:patientId" element={<MainLayout><ConsultationPage /></MainLayout>} />
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
             <Route path="*" element={<Navigate to="/" />} />

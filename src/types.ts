@@ -47,3 +47,14 @@ export interface TUSS {
   codigo: string;
   nome_exame: string;
 }
+
+export interface Exame {
+  id: string;
+  pacienteId: string;
+  nome: string;
+  url: string;
+  tipo: string;
+  tamanho: number;
+  userId: string;
+  dataUpload: string;
+}
