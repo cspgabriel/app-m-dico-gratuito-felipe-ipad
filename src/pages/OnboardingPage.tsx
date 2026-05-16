@@ -126,23 +126,25 @@ export default function OnboardingPage() {
     }
   };
 
+  const buildProfile = (options?: { completeOnboarding?: boolean }): UserProfile => ({
+    name: form.name.trim() || userProfile?.name || user?.displayName || '',
+    crm: form.crm.trim() || userProfile?.crm || '',
+    specialty: form.specialty || userProfile?.specialty || '',
+    clinicName: form.clinicName.trim() || userProfile?.clinicName || '',
+    clinicPhone: form.clinicPhone.trim() || userProfile?.clinicPhone || '',
+    clinicAddress: form.clinicAddress.trim() || userProfile?.clinicAddress || '',
+    logoUrl: form.logoUrl.trim() || userProfile?.logoUrl || '',
+    primaryColor: form.primaryColor || userProfile?.primaryColor || '#0A84FF',
+    role: userProfile?.role || 'admin',
+    tenantId: userProfile?.tenantId || user?.uid,
+    onboardingComplete: options?.completeOnboarding ?? true,
+  });
+
   const handleSubmit = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const profile: UserProfile = {
-        name: form.name.trim(),
-        crm: form.crm.trim(),
-        specialty: form.specialty,
-        clinicName: form.clinicName.trim(),
-        clinicPhone: form.clinicPhone.trim(),
-        clinicAddress: form.clinicAddress.trim(),
-        logoUrl: form.logoUrl.trim(),
-        primaryColor: form.primaryColor,
-        role: 'admin',
-        tenantId: user.uid,
-        onboardingComplete: true,
-      };
+      const profile = buildProfile({ completeOnboarding: true });
       await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
       await refreshProfile();
       toast.success('Tudo pronto! Bem-vindo(a) ao MedSystem.');
@@ -159,23 +161,7 @@ export default function OnboardingPage() {
     if (!user) return;
     setLoading(true);
     try {
-      await setDoc(
-        doc(db, 'users', user.uid),
-        {
-          name: form.name.trim() || userProfile?.name || user.displayName || '',
-          crm: form.crm.trim() || userProfile?.crm || '',
-          specialty: form.specialty || userProfile?.specialty || '',
-          clinicName: form.clinicName.trim() || userProfile?.clinicName || '',
-          clinicPhone: form.clinicPhone.trim() || userProfile?.clinicPhone || '',
-          clinicAddress: form.clinicAddress.trim() || userProfile?.clinicAddress || '',
-          logoUrl: form.logoUrl.trim() || userProfile?.logoUrl || '',
-          primaryColor: form.primaryColor || userProfile?.primaryColor || '#0A84FF',
-          role: userProfile?.role || 'admin',
-          tenantId: userProfile?.tenantId || user.uid,
-          onboardingComplete: true,
-        } satisfies UserProfile,
-        { merge: true },
-      );
+      await setDoc(doc(db, 'users', user.uid), buildProfile({ completeOnboarding: true }), { merge: true });
       await refreshProfile();
       toast.success('Você pode terminar a personalização depois em Configurações.');
       navigate('/dashboard');
