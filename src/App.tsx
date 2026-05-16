@@ -26,7 +26,7 @@ import { auth } from './lib/firebase';
 import { signOut } from 'firebase/auth';
 import { CalendarDays } from 'lucide-react';
 import AIChatbot from './components/AIChatbot';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAInstallPrompt, { PWAInstallButton } from './components/PWAInstallPrompt';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -234,8 +234,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
+        <PWAInstallButton
+          variant="outline"
+          className="w-full justify-start gap-3 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 mb-2 font-bold"
+        />
+        <Button
+          variant="ghost"
           className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl"
           onClick={() => signOut(auth)}
         >

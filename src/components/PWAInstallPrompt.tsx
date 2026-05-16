@@ -187,67 +187,168 @@ export default function PWAInstallPrompt() {
   );
 }
 
-/* Botão reutilizável (use onde quiser, ex.: Settings) */
-export function PWAInstallButton({ className }: { className?: string }) {
-  const [supported, setSupported] = useState(false);
+/* Botão sempre visível para instalar o app */
+export function PWAInstallButton({
+  className,
+  variant = 'ghost',
+  compact = false,
+}: {
+  className?: string;
+  variant?: 'ghost' | 'outline' | 'default';
+  compact?: boolean;
+}) {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIos, setShowIos] = useState(false);
+  const [installed, setInstalled] = useState(isStandalone());
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) return;
-    if (isIos()) {
-      setSupported(true);
-      return;
-    }
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setSupported(true);
+    };
+    const onInstalled = () => {
+      setInstalled(true);
+      setDeferred(null);
     };
     window.addEventListener('beforeinstallprompt', onPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
   }, []);
 
-  if (!supported) return null;
+  if (installed) {
+    return (
+      <div
+        className={`flex items-center gap-2 text-emerald-600 text-xs font-semibold ${className ?? ''}`}
+      >
+        <Smartphone size={14} /> App instalado
+      </div>
+    );
+  }
 
   const click = async () => {
     if (deferred) {
-      await deferred.prompt();
-      await deferred.userChoice;
-      setDeferred(null);
-      setSupported(false);
+      try {
+        await deferred.prompt();
+        const { outcome } = await deferred.userChoice;
+        if (outcome === 'accepted') {
+          setInstalled(true);
+          setDeferred(null);
+        }
+      } catch {
+        setShowHelp(true);
+      }
     } else {
-      setShowIos(true);
+      setShowHelp(true);
     }
   };
 
   return (
     <>
-      <Button onClick={click} className={className} variant="outline">
-        <Download size={16} className="mr-2" /> Instalar como app
+      <Button
+        onClick={click}
+        variant={variant === 'default' ? undefined : variant}
+        className={className}
+      >
+        <Download size={16} className={compact ? '' : 'mr-2'} />
+        {!compact && <span>Instalar app</span>}
       </Button>
-      {showIos && (
-        <div
-          className="fixed inset-0 z-[70] flex items-end bg-black/40 backdrop-blur-sm"
-          onClick={() => setShowIos(false)}
-        >
-          <div
-            className="bg-white rounded-t-3xl w-full max-w-md mx-auto p-6 pb-10"
-            onClick={(e) => e.stopPropagation()}
+
+      <AnimatePresence>
+        {showHelp && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setShowHelp(false)}
           >
-            <p className="text-sm">
-              No Safari, toque em <Share size={14} className="inline" /> e em seguida em{' '}
-              <Plus size={14} className="inline" /> <strong>Adicionar à Tela de Início</strong>.
-            </p>
-            <Button
-              onClick={() => setShowIos(false)}
-              className="w-full mt-4 rounded-xl bg-blue-600 text-white font-bold"
+            <motion.div
+              initial={{ y: 200, scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 200, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl w-full max-w-md p-6 pb-8 shadow-2xl"
             >
-              Ok
-            </Button>
-          </div>
-        </div>
-      )}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <Smartphone size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black">Instalar MedSystem</h3>
+                    <p className="text-xs text-gray-500">
+                      Como instalar no seu dispositivo
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                  aria-label="Fechar"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {isIos() ? (
+                <ol className="space-y-2.5">
+                  <li className="flex items-start gap-3 bg-gray-50 rounded-2xl p-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                      1
+                    </div>
+                    <p className="text-sm">
+                      Toque em <Share size={14} className="inline -mt-1" />{' '}
+                      <strong>Compartilhar</strong> no Safari
+                    </p>
+                  </li>
+                  <li className="flex items-start gap-3 bg-gray-50 rounded-2xl p-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                      2
+                    </div>
+                    <p className="text-sm">
+                      Toque em <Plus size={14} className="inline -mt-1" />{' '}
+                      <strong>Adicionar à Tela de Início</strong>
+                    </p>
+                  </li>
+                </ol>
+              ) : (
+                <div className="space-y-3 text-sm">
+                  <p className="text-gray-700">
+                    Seu navegador ainda não liberou a instalação automática. Tente:
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="bg-gray-50 rounded-2xl p-3">
+                      <strong>Chrome / Edge:</strong> ícone <Download size={12} className="inline" /> na
+                      barra de endereço, ou Menu (⋮) → <em>Instalar MedSystem</em>.
+                    </li>
+                    <li className="bg-gray-50 rounded-2xl p-3">
+                      <strong>Safari (Mac):</strong> Arquivo → <em>Adicionar ao Dock</em>.
+                    </li>
+                    <li className="bg-gray-50 rounded-2xl p-3">
+                      <strong>Firefox:</strong> ainda não suporta instalação de PWA.
+                    </li>
+                  </ul>
+                  <p className="text-xs text-gray-500">
+                    Dica: o botão automático só aparece em HTTPS depois do site ser usado por alguns
+                    segundos.
+                  </p>
+                </div>
+              )}
+
+              <Button
+                onClick={() => setShowHelp(false)}
+                className="w-full mt-5 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              >
+                Entendi
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

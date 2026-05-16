@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { useAuth } from '../components/FirebaseProvider';
-import { User, Shield, CreditCard, Bell, Building, Users, Image as ImageIcon } from 'lucide-react';
+import { User, Shield, CreditCard, Bell, Building, Users, Image as ImageIcon, Smartphone } from 'lucide-react';
+import { PWAInstallButton } from '../components/PWAInstallPrompt';
 import { Button } from '../components/ui/button';
 import { useState } from 'react';
 import { db } from '../lib/firebase';
@@ -95,6 +96,25 @@ export default function Settings() {
             <Button variant="outline" className="w-full rounded-xl gap-2 font-bold text-apple-blue border-apple-blue/20 hover:bg-apple-blue/5">
               + Convidar Membro
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="apple-card md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Smartphone size={20} />
+              Instalar como App
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="text-sm text-apple-gray-dark">
+              <p className="font-bold text-gray-800">Acesse o MedSystem como um aplicativo nativo.</p>
+              <p className="mt-1">Funciona offline, abre em tela cheia e tem ícone próprio na home.</p>
+            </div>
+            <PWAInstallButton
+              variant="default"
+              className="rounded-xl bg-apple-blue hover:bg-blue-600 text-white font-bold h-11 px-6 shadow-lg shadow-blue-500/20"
+            />
           </CardContent>
         </Card>
 
