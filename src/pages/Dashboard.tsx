@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, Settings as SettingsIcon } from 'lucide-react';
+import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, Settings as SettingsIcon, CalendarCheck, CalendarX, CalendarClock, Clock, MapPin, Video } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -12,8 +12,10 @@ import { handleFirestoreError, OperationType } from '../lib/error-handler';
 
 export default function Dashboard() {
   const { user, userProfile, tenantId } = useAuth();
-  const [stats, setStats] = useState({ patients: 0, appointments: 0 });
   const [recentPatients, setRecentPatients] = useState<Paciente[]>([]);
+  const [allPatients, setAllPatients] = useState<Paciente[]>([]);
+  const [consultas, setConsultas] = useState<any[]>([]);
+  const [agendamentos, setAgendamentos] = useState<any[]>([]);
   const navigate = useNavigate();
 
   const plan = userProfile?.plan || 'basico';
@@ -25,29 +27,78 @@ export default function Dashboard() {
       collection(db, 'pacientes'),
       where('userId', '==', tenantId)
     );
-
-    const unsubscribe = onSnapshot(patientsQuery, (snapshot) => {
+    const unsubP = onSnapshot(patientsQuery, (snapshot) => {
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paciente));
       docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setAllPatients(docs);
       setRecentPatients(docs.slice(0, 5));
-      setStats(prev => ({ ...prev, patients: docs.length }));
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'pacientes');
     });
 
-    const fetchAppointmentsStat = async () => {
-      try {
-        const q = query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId));
-        const snapshot = await getDocs(q);
-        setStats(prev => ({ ...prev, appointments: snapshot.size }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchAppointmentsStat();
+    const unsubC = onSnapshot(
+      query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId)),
+      (snap) => setConsultas(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }))),
+      (err) => console.error(err)
+    );
 
-    return unsubscribe;
+    const unsubA = onSnapshot(
+      query(collection(db, 'agendamentos'), where('userId', '==', tenantId)),
+      (snap) => setAgendamentos(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }))),
+      (err) => console.error(err)
+    );
+
+    return () => { unsubP(); unsubC(); unsubA(); };
   }, [tenantId]);
+
+  const monthStart = new Date();
+  monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+  const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1);
+
+  const inMonth = (iso?: string) => {
+    if (!iso) return false;
+    const d = new Date(iso);
+    return d >= monthStart && d < monthEnd;
+  };
+
+  const realizadasMes = consultas.filter(c => inMonth(c.data)).length;
+  const agendadasMes = agendamentos.filter(a => inMonth(a.data) && a.status !== 'cancelled').length;
+  const desmarcadasMes = agendamentos.filter(a => inMonth(a.data) && a.status === 'cancelled').length;
+  const totalPacientes = allPatients.length;
+
+  const patientName = (id: string) => allPatients.find(p => p.id === id)?.nome || 'Paciente';
+
+  const now = new Date();
+  const upcoming = [
+    ...agendamentos
+      .filter(a => a.data && new Date(a.data) >= new Date(now.toDateString()) && a.status !== 'cancelled')
+      .map(a => ({
+        id: a.id,
+        pacienteId: a.pacienteId,
+        start: new Date(a.data),
+        duracao: a.duracao ?? 30,
+        tipo: a.tipo || 'Consulta',
+        local: a.local || 'Presencial',
+        source: 'agendamento' as const,
+      })),
+    ...consultas
+      .filter(c => c.data && new Date(c.data) >= new Date(now.toDateString()))
+      .map(c => ({
+        id: c.id,
+        pacienteId: c.pacienteId,
+        start: new Date(c.data),
+        duracao: 30,
+        tipo: 'Consulta realizada',
+        local: 'Presencial' as const,
+        source: 'consulta' as const,
+      })),
+  ]
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .slice(0, 5);
+
+  const monthLabel = monthStart
+    .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    .replace(/^\w/, c => c.toUpperCase());
 
   return (
     <div className="space-y-8 pb-10">
@@ -92,45 +143,48 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          icon={Users} 
-          label="Pacientes Ativos" 
-          value={stats.patients.toString()} 
-          color="blue" 
-          trend="+12% este mês"
+      {/* Agenda — mobile-first (above stats) */}
+      <div className="lg:hidden">
+        <AgendaBlock
+          monthLabel={monthLabel}
+          upcoming={upcoming}
+          patientName={patientName}
+          onOpen={() => navigate('/agenda')}
+        />
+      </div>
+
+      <div className="flex items-end justify-between">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">
+          Visão de {monthLabel}
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+        <StatCard
+          icon={Users}
+          label="Total Pacientes"
+          value={totalPacientes.toString()}
+          color="blue"
           limit={plan === 'basico' ? '50 max' : 'Ilimitado'}
         />
-        <StatCard 
-          icon={Calendar} 
-          label="Consultas" 
-          value={stats.appointments.toString()} 
-          color="emerald" 
-          trend="+5% nesta semana"
+        <StatCard
+          icon={CalendarCheck}
+          label="Realizadas"
+          value={realizadasMes.toString()}
+          color="emerald"
         />
-        <StatCard 
-          icon={Activity} 
-          label="Prontuários" 
-          value={stats.appointments.toString()} 
-          color="purple" 
-          trend="100% de adesão"
+        <StatCard
+          icon={CalendarX}
+          label="Desmarcadas"
+          value={desmarcadasMes.toString()}
+          color="amber"
         />
-        <div 
-          onClick={() => navigate('/patients')}
-          className="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-blue-600 to-indigo-700 p-6 flex flex-col justify-between cursor-pointer shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-        >
-           <div className="absolute top-0 right-0 p-6 opacity-30 transform group-hover:scale-110 transition-transform">
-             <PlusCircle size={64} className="text-white" />
-           </div>
-           <div></div>
-           <div className="relative z-10 text-white">
-             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4">
-                <PlusCircle size={24} />
-             </div>
-             <p className="font-bold text-xl mb-1">Nova Consulta</p>
-             <p className="text-blue-100 text-sm font-medium">Selecione um paciente para iniciar um atendimento.</p>
-           </div>
-        </div>
+        <StatCard
+          icon={CalendarClock}
+          label="Agendadas"
+          value={agendadasMes.toString()}
+          color="purple"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -197,21 +251,13 @@ export default function Dashboard() {
            </Card>
         </div>
 
-        <div className="space-y-8">
-           <Card className="rounded-[32px] border-none shadow-sm bg-white h-[400px]">
-             <CardHeader className="p-8">
-               <CardTitle className="text-2xl font-black text-gray-900">Produtividade</CardTitle>
-               <p className="text-gray-500 font-medium text-sm mt-1">Sua evolução semanal</p>
-             </CardHeader>
-             <CardContent className="flex items-center justify-center h-[250px] text-gray-400">
-               <div className="flex flex-col items-center gap-4 text-center px-6">
-                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
-                    <TrendingUp size={32} className="text-gray-400" />
-                 </div>
-                 <p className="text-sm font-medium">Os gráficos de desempenho estarão disponíveis em breve.</p>
-               </div>
-             </CardContent>
-           </Card>
+        <div className="hidden lg:block space-y-8">
+           <AgendaBlock
+             monthLabel={monthLabel}
+             upcoming={upcoming}
+             patientName={patientName}
+             onOpen={() => navigate('/agenda')}
+           />
         </div>
       </div>
     </div>
@@ -254,6 +300,103 @@ function StatCard({ icon: Icon, label, value, color, trend, limit }: { icon: any
             {trend && <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><TrendingUp size={12}/> {trend}</p>}
           </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AgendaBlock({
+  monthLabel,
+  upcoming,
+  patientName,
+  onOpen,
+}: {
+  monthLabel: string;
+  upcoming: Array<{ id: string; pacienteId: string; start: Date; duracao: number; tipo: string; local: 'Presencial' | 'Telemedicina'; source: 'agendamento' | 'consulta' }>;
+  patientName: (id: string) => string;
+  onOpen: () => void;
+}) {
+  const fmtTime = (d: Date) =>
+    `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  const today = new Date();
+  const isToday = (d: Date) =>
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+
+  return (
+    <Card className="rounded-[32px] border-none shadow-sm bg-white overflow-hidden">
+      <CardHeader className="p-6 lg:p-8 pb-2 flex flex-row items-start justify-between gap-3">
+        <div>
+          <CardTitle className="text-xl lg:text-2xl font-black text-gray-900">Agenda</CardTitle>
+          <p className="text-gray-500 font-medium text-xs lg:text-sm mt-1">
+            Próximos compromissos · {monthLabel}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={onOpen}
+          className="text-blue-600 font-bold text-sm hover:bg-blue-50 rounded-xl shrink-0"
+        >
+          Abrir <ChevronRight size={14} />
+        </Button>
+      </CardHeader>
+      <CardContent className="p-3 lg:p-4">
+        {upcoming.length === 0 ? (
+          <div className="py-10 text-center text-gray-400 flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center">
+              <Calendar size={26} className="text-gray-300" />
+            </div>
+            <p className="text-sm font-medium">Nenhum compromisso a partir de hoje.</p>
+            <Button
+              onClick={onOpen}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold gap-2 mt-1"
+            >
+              <PlusCircle size={16} /> Novo agendamento
+            </Button>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {upcoming.map((e) => (
+              <li
+                key={e.id}
+                onClick={onOpen}
+                className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer transition hover:shadow-sm ${
+                  e.source === 'consulta'
+                    ? 'bg-emerald-50/60 border-emerald-100'
+                    : 'bg-blue-50/60 border-blue-100'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center w-14 shrink-0 rounded-xl bg-white border border-black/5 py-1.5 shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    {e.start.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
+                  </span>
+                  <span className="text-lg font-black text-gray-900 leading-none">
+                    {e.start.getDate()}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-sm text-gray-900 truncate">
+                    {patientName(e.pacienteId)}
+                  </p>
+                  <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium">
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} />
+                      {fmtTime(e.start)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      {e.local === 'Telemedicina' ? <Video size={11} /> : <MapPin size={11} />}
+                      {e.local}
+                    </span>
+                    {isToday(e.start) && (
+                      <span className="text-blue-600 font-bold uppercase tracking-wider">Hoje</span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   );

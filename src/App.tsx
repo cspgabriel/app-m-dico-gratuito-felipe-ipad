@@ -255,11 +255,15 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-black/5 z-40 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-apple-blue rounded-lg flex items-center justify-center text-white">
-            <ClipboardList size={18} />
-          </div>
-          <span className="font-bold">MedSystem</span>
+        <div className="flex items-center gap-2 min-w-0">
+          {userProfile?.logoUrl ? (
+            <img src={userProfile.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+          ) : (
+            <div className="w-8 h-8 bg-apple-blue rounded-lg flex items-center justify-center text-white shrink-0">
+              <ClipboardList size={18} />
+            </div>
+          )}
+          <span className="font-bold truncate">{userProfile?.clinicName || 'MedSystem'}</span>
         </div>
         <button onClick={toggleMenu} className="p-2 rounded-full hover:bg-black/5">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
