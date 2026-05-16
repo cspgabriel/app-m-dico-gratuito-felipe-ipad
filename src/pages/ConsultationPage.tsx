@@ -44,7 +44,7 @@ export default function ConsultationPage() {
   const { patientId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, tenantId } = useAuth();
   const [patient, setPatient] = useState<Paciente | null>(null);
   const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'evolution');
 
@@ -99,7 +99,7 @@ export default function ConsultationPage() {
   };
 
   const handleSave = async () => {
-    if (!user || !patientId) return;
+    if (!user || !patientId || !tenantId) return;
     try {
       const now = new Date().toISOString();
       if (activeTab === 'anamnese') {
@@ -107,7 +107,7 @@ export default function ConsultationPage() {
           pacienteId: patientId,
           queixaPrincipal: queixa,
           hda,
-          userId: user.uid,
+          userId: tenantId,
           createdAt: now
         });
       } else {
@@ -119,7 +119,7 @@ export default function ConsultationPage() {
           conduta,
           cid10: selectedCids,
           tuss: selectedTuss,
-          userId: user.uid
+          userId: tenantId
         });
       }
       toast.success('Registro salvo com sucesso!');
@@ -134,15 +134,15 @@ export default function ConsultationPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <header className="flex justify-between items-center bg-white/40 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white/60">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white/40 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white/60">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-xl hover:bg-white/50"><ArrowLeft size={20} /></Button>
-          <div>
-            <h2 className="text-xl font-bold">{activeTab === 'anamnese' ? 'Nova Anamnese' : 'Nova Consulta'}</h2>
-            <p className="text-sm text-apple-gray-dark font-medium italic">Paciente: {patient.nome}</p>
+          <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-xl hover:bg-white/50 shrink-0"><ArrowLeft size={20} /></Button>
+          <div className="overflow-hidden">
+            <h2 className="text-xl font-bold truncate">{activeTab === 'anamnese' ? 'Nova Anamnese' : 'Nova Consulta'}</h2>
+            <p className="text-sm text-apple-gray-dark font-medium italic truncate">Paciente: {patient.nome}</p>
           </div>
         </div>
-        <Button onClick={handleSave} className="bg-apple-blue hover:bg-blue-600 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20 px-8">
+        <Button onClick={handleSave} className="bg-apple-blue hover:bg-blue-600 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20 px-8 w-full sm:w-auto">
           <Save size={18} />
           Salvar
         </Button>

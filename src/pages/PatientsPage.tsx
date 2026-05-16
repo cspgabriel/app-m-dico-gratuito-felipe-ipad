@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
 
 export default function PatientsPage() {
-  const { user } = useAuth();
+  const { user, tenantId } = useAuth();
   const [patients, setPatients] = useState<Paciente[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,11 +32,11 @@ export default function PatientsPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !tenantId) return;
 
     const q = query(
       collection(db, 'pacientes'),
-      where('userId', '==', user.uid)
+      where('userId', '==', tenantId)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -72,7 +72,7 @@ export default function PatientsPage() {
         alergias: newAlergias,
         medicacoes: newMedicacoes,
         historico: newHistorico,
-        userId: user.uid,
+        userId: tenantId,
         createdAt: now,
         updatedAt: now,
       });
@@ -96,7 +96,7 @@ export default function PatientsPage() {
   };
 
   const seedMockData = async () => {
-    if (!user) return;
+    if (!user || !tenantId) return;
     try {
       setLoading(true);
       const mocks = [
@@ -110,7 +110,7 @@ export default function PatientsPage() {
           alergias: "Iodo, Dipirona",
           medicacoes: "Losartana 50mg, AAS 100mg",
           historico: "Hipertensa há 10 anos. HAS bem controlada.",
-          userId: user.uid,
+          userId: tenantId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -124,7 +124,7 @@ export default function PatientsPage() {
           alergias: "",
           medicacoes: "Omeprazol 20mg",
           historico: "Gastrite esporádica. Sem comorbidades graves.",
-          userId: user.uid,
+          userId: tenantId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -138,7 +138,7 @@ export default function PatientsPage() {
           alergias: "Penicilina",
           medicacoes: "Nenhuma",
           historico: "Paciente hígida.",
-          userId: user.uid,
+          userId: tenantId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -158,18 +158,18 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Pacientes</h2>
           <p className="text-apple-gray-dark">Gerencie seus pacientes e prontuários</p>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 
             onClick={seedMockData} 
             disabled={loading}
-            className="rounded-xl gap-2"
+            className="rounded-xl gap-2 w-full sm:w-auto"
           >
             <Database size={20} />
             Gerar Exemplos
@@ -177,7 +177,7 @@ export default function PatientsPage() {
 
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20">
+              <Button className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20 w-full sm:w-auto">
                 <UserPlus size={20} />
                 Novo Paciente
               </Button>

@@ -14,6 +14,25 @@ service cloud.firestore {
     function existing() { return resource.data; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
 
+    function isTenantUser(tenantId) {
+      return isSignedIn() && (request.auth.uid == tenantId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId);
+    }
+
+    // USERS
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
+      allow list: if isSignedIn() && isTenantUser(resource.data.tenantId);
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
+    }
+
+    // INVITES
+    match /invites/{inviteId} {
+      allow create: if isTenantUser(incoming().tenantId);
+      allow read, update, delete: if isTenantUser(resource.data.tenantId);
+    }
+
+
     // Paciente Validation
     function isValidPaciente(data) {
       return data.keys().hasAll(['nome', 'userId', 'createdAt', 'updatedAt']) &&
@@ -47,6 +66,14 @@ service cloud.firestore {
       match /exames/{id} {
         allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
+    }
+    
+    // Collection Group Queries
+    match /{path=**}/consultas/{id} {
+      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /{path=**}/anamneses/{id} {
+      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }

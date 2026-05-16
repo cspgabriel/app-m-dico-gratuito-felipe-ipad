@@ -60,6 +60,42 @@ async function startServer() {
     }
   });
 
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message, context, history } = req.body;
+      
+      const systemInstruction = `
+        Você é o assistente virtual inteligente desta clínica.
+        Sua missão é ajudar o médico com informações dos relatórios, responder dúvidas e dar suporte sobre os dados da clínica.
+        Seja educado, objetivo e prestativo. Contexto atual do banco de dados (Apenas leitura):
+        ${context || 'Nenhum dado fornecido'}
+      `;
+
+      let contents = [];
+      if (history && Array.isArray(history)) {
+        contents = history.map((item: any) => ({
+          role: item.role === 'model' ? 'model' : 'user',
+          parts: [{ text: item.text }]
+        }));
+      }
+
+      contents.push({ role: 'user', parts: [{ text: message }] });
+
+      const response = await genai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: contents,
+        config: {
+          systemInstruction: systemInstruction,
+        }
+      });
+      
+      res.json({ text: response.text });
+    } catch (error) {
+      console.error("Gemini Chat Error:", error);
+      res.status(500).json({ error: "Failed to process chat" });
+    }
+  });
+
   // Vite middleware setup
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

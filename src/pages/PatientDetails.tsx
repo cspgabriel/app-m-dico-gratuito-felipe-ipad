@@ -24,14 +24,15 @@ import {
   Activity, 
   Stethoscope,
   ChevronRight,
-  Download
+  Download,
+  Phone
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { generatePDF } from '../lib/pdf-service';
 import { toast } from 'sonner';
 
 export default function PatientDetails() {
-  const { user } = useAuth();
+  const { user, tenantId, userProfile } = useAuth();
   const { id } = useParams();
   const [patient, setPatient] = useState<Paciente | null>(null);
   const [consultations, setConsultations] = useState<Consulta[]>([]);
@@ -130,7 +131,7 @@ export default function PatientDetails() {
             url: downloadURL,
             tipo: file.type,
             tamanho: file.size,
-            userId: user.uid,
+            userId: tenantId,
             dataUpload: new Date().toISOString()
           });
           toast.success('Exame salvo com sucesso!');
@@ -156,33 +157,33 @@ export default function PatientDetails() {
         <span>Voltar para lista</span>
       </Link>
 
-      <header className="flex justify-between items-center bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#E5E5EA] overflow-hidden flex items-center justify-center text-apple-blue font-bold text-2xl shadow-inner">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-4 relative z-10 w-full sm:w-auto">
+          <div className="w-16 h-16 rounded-2xl bg-[#E5E5EA] shrink-0 overflow-hidden flex items-center justify-center text-apple-blue font-bold text-2xl shadow-inner">
             {patient.nome[0].toUpperCase()}
           </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">{patient.nome}</h2>
-            <div className="flex gap-4 text-apple-gray-dark text-xs font-medium mt-1 uppercase tracking-wide">
+          <div className="overflow-hidden w-full">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{patient.nome}</h2>
+            <div className="flex flex-wrap gap-2 sm:gap-4 text-apple-gray-dark text-[10px] sm:text-xs font-medium mt-1 uppercase tracking-wide">
               <span>{patient.cpf || 'CPF: ---'}</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>ID: {patient.id.slice(0, 8).toUpperCase()}</span>
               {patient.alergias && (
                 <>
-                  <span>•</span>
-                  <span className="text-[#FF3B30]">Alergia: {patient.alergias}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="text-[#FF3B30] w-full sm:w-auto truncate block sm:inline">Alergia: {patient.alergias}</span>
                 </>
               )}
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="rounded-xl gap-2 apple-glass border-white/40" onClick={handleExportPDF}>
+        <div className="flex flex-col sm:flex-row gap-3 relative z-10 w-full sm:w-auto">
+          <Button variant="outline" className="rounded-xl gap-2 apple-glass border-white/40 w-full sm:w-auto" onClick={handleExportPDF}>
             <Download size={18} />
             Exportar PDF
           </Button>
-          <Link to={`/consultation/${patient.id}`}>
-            <Button className="bg-apple-blue hover:bg-blue-600 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20">
+          <Link to={`/consultation/${patient.id}`} className="w-full sm:w-auto">
+            <Button className="bg-apple-blue hover:bg-blue-600 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20 w-full sm:w-auto">
               <PlusCircle size={18} />
               Nova Consulta
             </Button>
@@ -199,8 +200,37 @@ export default function PatientDetails() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="apple-card border-none shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="apple-card border-none shadow-sm md:col-span-1 border-t-4 border-t-apple-blue">
+              <CardHeader className="pb-3 text-sm font-medium text-apple-gray-dark uppercase tracking-wider flex items-center justify-between">
+                Informações de Contato
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="pt-4 border-t border-black/5 mt-4">
+                  <h4 className="text-sm font-bold text-apple-gray-dark uppercase mb-2">Ações Rápidas</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button 
+                      onClick={() => {
+                        const eventTitle = encodeURIComponent(`Consulta - ${userProfile?.clinicName || 'Clínica'}`);
+                        const details = encodeURIComponent(`Consulta agendada para ${patient.nome}`);
+                        window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&details=${details}`, '_blank');
+                      }}
+                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold"
+                    >
+                      <Calendar size={14} /> Agendar em Calendário
+                    </Button>
+                    <Button 
+                      onClick={() => toast.success('E-mail SMS de lembrete enviado (Simulação)')}
+                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 font-semibold"
+                    >
+                      <Phone size={14} /> SMS Lembrete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="apple-card border-none shadow-sm md:col-span-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-apple-gray-dark uppercase tracking-wider flex items-center gap-2">
                   <Activity size={16} />

@@ -64,9 +64,41 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["pacienteId", "userId"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Dados do usuário/clínica (SaaS)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "crm": { "type": "string" },
+        "clinicName": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "role": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "onboardingComplete": { "type": "boolean" }
+      }
+    },
+    "Exame": {
+      "title": "Exame",
+      "description": "Exames uploaded via Storage",
+      "type": "object",
+      "properties": {
+        "pacienteId": { "type": "string" },
+        "nome": { "type": "string" },
+        "url": { "type": "string" },
+        "tipo": { "type": "string" },
+        "tamanho": { "type": "number" },
+        "userId": { "type": "string" },
+        "dataUpload": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Usuários do sistema / clínicas"
+    },
     "/pacientes/{pacienteId}": {
       "schema": "Paciente",
       "description": "Dados do paciente"
