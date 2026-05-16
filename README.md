@@ -7,6 +7,7 @@
 This contains everything you need to run your app locally.
 
 View your app in AI Studio: https://ai.studio/apps/e8bdb9a7-7e5c-46f3-9846-9da828f5cab8
+GitHub Pages: https://cspgabriel.github.io/app-m-dico-gratuito-felipe-ipad/
 
 ## Run Locally
 
@@ -18,3 +19,10 @@ View your app in AI Studio: https://ai.studio/apps/e8bdb9a7-7e5c-46f3-9846-9da82
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Deploy to GitHub Pages
+
+The repository now includes the workflow `.github/workflows/deploy-pages.yml`.
+After enabling **Settings → Pages → Build and deployment → Source: GitHub Actions**, every push to `main` deploys to:
+
+`https://cspgabriel.github.io/app-m-dico-gratuito-felipe-ipad/`
