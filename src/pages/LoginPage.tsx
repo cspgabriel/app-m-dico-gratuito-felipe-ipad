@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../lib/firebase';
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
@@ -21,9 +21,19 @@ export default function LoginPage() {
   const handleAnonymousLogin = async () => {
     try {
       setLoading(true);
+      setError('');
       await signInAnonymously(auth);
     } catch (err: any) {
-      setError('Erro ao entrar como visitante.');
+      const code = err?.code ?? '';
+      let msg = 'Erro ao entrar como visitante.';
+      if (code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+        msg = 'Login anônimo não está habilitado no Firebase Console (Authentication → Sign-in method → Anonymous).';
+      } else if (code === 'auth/network-request-failed') {
+        msg = 'Falha de rede. Verifique sua conexão.';
+      } else if (code) {
+        msg = `Erro ao entrar como visitante (${code}).`;
+      }
+      setError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -33,10 +43,36 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+      setError('');
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (popupErr: any) {
+        const code = popupErr?.code ?? '';
+        if (
+          code === 'auth/popup-blocked' ||
+          code === 'auth/popup-closed-by-user' ||
+          code === 'auth/cancelled-popup-request' ||
+          code === 'auth/operation-not-supported-in-this-environment'
+        ) {
+          await signInWithRedirect(auth, provider);
+          return;
+        }
+        throw popupErr;
+      }
     } catch (err: any) {
-      setError('Erro ao fazer login com Google. Tente novamente.');
+      const code = err?.code ?? '';
+      let msg = 'Erro ao fazer login com Google. Tente novamente.';
+      if (code === 'auth/unauthorized-domain') {
+        msg = 'Domínio não autorizado no Firebase. Adicione este domínio em Authentication → Settings → Authorized domains.';
+      } else if (code === 'auth/operation-not-allowed') {
+        msg = 'Login com Google não está habilitado no Firebase Console.';
+      } else if (code === 'auth/network-request-failed') {
+        msg = 'Falha de rede. Verifique sua conexão.';
+      } else if (code) {
+        msg = `Erro ao fazer login com Google (${code}).`;
+      }
+      setError(msg);
       console.error(err);
     } finally {
       setLoading(false);

@@ -16,28 +16,36 @@ export default defineConfig(({mode}) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['icon.svg'],
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+          navigateFallback: `${basePath}index.html`,
+          cleanupOutdatedCaches: true,
+        },
         manifest: {
           name: 'MedSystem Clinical Suite',
           short_name: 'MedSystem',
           description: 'A suíte clínica definitiva para modernizar o seu consultório',
-          theme_color: '#1a56db', 
+          theme_color: '#1a56db',
           background_color: '#ffffff',
           display: 'standalone',
           orientation: 'portrait',
+          scope: basePath,
+          start_url: basePath,
           icons: [
             {
               src: 'icon.svg',
               sizes: '192x192',
-              type: 'image/svg+xml'
+              type: 'image/svg+xml',
+              purpose: 'any',
             },
             {
               src: 'icon.svg',
               sizes: '512x512',
               type: 'image/svg+xml',
-              purpose: 'any maskable'
-            }
-          ]
-        }
+              purpose: 'any maskable',
+            },
+          ],
+        },
       })
     ],
     define: {

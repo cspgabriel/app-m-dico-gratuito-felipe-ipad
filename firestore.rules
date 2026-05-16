@@ -68,6 +68,13 @@ service cloud.firestore {
       }
     }
     
+    // AGENDAMENTOS
+    match /agendamentos/{agendaId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
     // Collection Group Queries
     match /{path=**}/consultas/{id} {
       allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
