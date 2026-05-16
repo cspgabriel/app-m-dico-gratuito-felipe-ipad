@@ -26,6 +26,7 @@ import { auth } from './lib/firebase';
 import { signOut } from 'firebase/auth';
 import { CalendarDays } from 'lucide-react';
 import AIChatbot from './components/AIChatbot';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -340,6 +341,7 @@ export default function App() {
           </Routes>
         </Suspense>
         <Toaster position="top-right" />
+        <PWAInstallPrompt />
       </Router>
     </FirebaseProvider>
   );
