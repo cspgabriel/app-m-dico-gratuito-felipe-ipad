@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit } from 'lucide-react';
+import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -71,6 +71,12 @@ export default function Dashboard() {
           <p className="text-base md:text-lg text-gray-600 font-medium">Aqui está o resumo da sua clínica hoje.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10 w-full md:w-auto">
+          <Link to="/onboarding" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto rounded-2xl border-2 border-blue-200 bg-white/70 backdrop-blur text-blue-700 hover:bg-blue-50 h-12 px-6 font-bold flex gap-2 justify-center">
+              <SettingsIcon size={18} />
+              Personalizar Clínica
+            </Button>
+          </Link>
           {plan === 'basico' && (
              <Button variant="outline" className="w-full sm:w-auto rounded-2xl border-2 border-amber-400 text-amber-600 hover:bg-amber-50 h-12 px-6 font-bold flex gap-2 justify-center">
                <Crown size={18} />
