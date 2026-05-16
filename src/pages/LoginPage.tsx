@@ -21,9 +21,19 @@ export default function LoginPage() {
   const handleAnonymousLogin = async () => {
     try {
       setLoading(true);
+      setError('');
       await signInAnonymously(auth);
     } catch (err: any) {
-      setError('Erro ao entrar como visitante.');
+      const code = err?.code ?? '';
+      let msg = 'Erro ao entrar como visitante.';
+      if (code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+        msg = 'Login anônimo não está habilitado no Firebase Console (Authentication → Sign-in method → Anonymous).';
+      } else if (code === 'auth/network-request-failed') {
+        msg = 'Falha de rede. Verifique sua conexão.';
+      } else if (code) {
+        msg = `Erro ao entrar como visitante (${code}).`;
+      }
+      setError(msg);
       console.error(err);
     } finally {
       setLoading(false);
