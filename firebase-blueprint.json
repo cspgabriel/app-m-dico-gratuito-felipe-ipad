@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "Paciente": {
+      "title": "Paciente",
+      "description": "Informações cadastrais do paciente",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "description": "Nome completo" },
+        "cpf": { "type": "string", "description": "CPF do paciente" },
+        "telefone": { "type": "string", "description": "Telefone de contato" },
+        "nascimento": { "type": "string", "format": "date", "description": "Data de nascimento" },
+        "sexo": { "type": "string", "enum": ["M", "F", "Outro"] },
+        "convenio": { "type": "string", "description": "Plano de saúde ou convênio" },
+        "alergias": { "type": "string", "description": "Lista de alergias conhecidas" },
+        "medicacoes": { "type": "string", "description": "Medicações em uso contínuo" },
+        "historico": { "type": "string", "description": "Histórico familiar e pessoal relevante" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "ID do médico/usuário proprietário do registro" }
+      },
+      "required": ["nome", "userId"]
+    },
+    "Anamnese": {
+      "title": "Anamnese",
+      "description": "Registro de anamnese detalhada",
+      "type": "object",
+      "properties": {
+        "pacienteId": { "type": "string" },
+        "queixaPrincipal": { "type": "string" },
+        "hda": { "type": "string", "description": "História da Doença Atual" },
+        "interrogatorioSistematico": { "type": "string" },
+        "antecedentesPessoais": { "type": "string" },
+        "antecedentesFamiliares": { "type": "string" },
+        "habitosVida": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["pacienteId", "userId"]
+    },
+    "Consulta": {
+      "title": "Consulta / Evolução",
+      "description": "Registro de evolução clínica e consulta",
+      "type": "object",
+      "properties": {
+        "pacienteId": { "type": "string" },
+        "data": { "type": "string", "format": "date-time" },
+        "queixa": { "type": "string" },
+        "exameFisico": { "type": "string" },
+        "conduta": { "type": "string" },
+        "cid10": { "type": "array", "items": { "type": "string" } },
+        "tuss": { "type": "array", "items": { "type": "string" } },
+        "userId": { "type": "string" }
+      },
+      "required": ["pacienteId", "userId", "data"]
+    },
+    "Prescricao": {
+      "title": "Prescrição",
+      "description": "Prescrição médica",
+      "type": "object",
+      "properties": {
+        "pacienteId": { "type": "string" },
+        "itens": { "type": "array", "items": { "type": "string" } },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["pacienteId", "userId"]
+    }
+  },
+  "firestore": {
+    "/pacientes/{pacienteId}": {
+      "schema": "Paciente",
+      "description": "Dados do paciente"
+    },
+    "/pacientes/{pacienteId}/anamneses/{anamneseId}": {
+      "schema": "Anamnese",
+      "description": "Anamneses do paciente"
+    },
+    "/pacientes/{pacienteId}/consultas/{consultaId}": {
+      "schema": "Consulta",
+      "description": "Consultas e evoluções"
+    },
+    "/pacientes/{pacienteId}/prescricoes/{prescricaoId}": {
+      "schema": "Prescricao",
+      "description": "Prescrições emitidas"
+    }
+  }
+}
