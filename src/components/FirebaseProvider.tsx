@@ -6,10 +6,14 @@ import { auth, db } from '@/lib/firebase';
 export interface UserProfile {
   name?: string;
   crm?: string;
+  specialty?: string;
   clinicName?: string;
+  clinicPhone?: string;
+  clinicAddress?: string;
   logoUrl?: string;
+  primaryColor?: string;
   role?: string; /* 'admin' | 'staff' */
-  tenantId?: string; 
+  tenantId?: string;
   onboardingComplete?: boolean;
   plan?: 'basico' | 'profissional' | 'multi';
 }
