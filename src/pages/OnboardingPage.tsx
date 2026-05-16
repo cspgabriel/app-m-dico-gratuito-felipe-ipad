@@ -155,6 +155,38 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleSkip = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      await setDoc(
+        doc(db, 'users', user.uid),
+        {
+          name: form.name.trim() || userProfile?.name || user.displayName || '',
+          crm: form.crm.trim() || userProfile?.crm || '',
+          specialty: form.specialty || userProfile?.specialty || '',
+          clinicName: form.clinicName.trim() || userProfile?.clinicName || '',
+          clinicPhone: form.clinicPhone.trim() || userProfile?.clinicPhone || '',
+          clinicAddress: form.clinicAddress.trim() || userProfile?.clinicAddress || '',
+          logoUrl: form.logoUrl.trim() || userProfile?.logoUrl || '',
+          primaryColor: form.primaryColor || userProfile?.primaryColor || '#0A84FF',
+          role: userProfile?.role || 'admin',
+          tenantId: userProfile?.tenantId || user.uid,
+          onboardingComplete: true,
+        } satisfies UserProfile,
+        { merge: true },
+      );
+      await refreshProfile();
+      toast.success('Você pode terminar a personalização depois em Configurações.');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao pular a configuração inicial.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F2F2F7] to-[#E5E5EA] p-4">
       <motion.div
@@ -164,11 +196,16 @@ export default function OnboardingPage() {
       >
         {/* Header com progresso */}
         <div className="px-8 pt-8 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-apple-gray-dark">
-              Passo {step} de {TOTAL_STEPS}
-            </span>
-            <span className="text-xs font-semibold text-apple-gray-dark">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-apple-gray-dark">
+                Passo {step} de {TOTAL_STEPS}
+              </span>
+              <p className="text-xs text-apple-gray-dark mt-1">
+                Configure agora ou ignore e finalize depois em Configurações.
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-apple-gray-dark shrink-0">
               {Math.round((step / TOTAL_STEPS) * 100)}%
             </span>
           </div>
@@ -414,6 +451,15 @@ export default function OnboardingPage() {
 
           {/* Footer */}
           <div className="flex items-center gap-3 mt-8">
+            <Button
+              type="button"
+              variant="ghost"
+              className="rounded-xl text-apple-gray-dark"
+              onClick={handleSkip}
+              disabled={loading}
+            >
+              Ignorar por agora
+            </Button>
             {step > 1 && (
               <Button
                 type="button"

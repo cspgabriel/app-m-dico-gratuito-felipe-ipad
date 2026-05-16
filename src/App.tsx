@@ -44,6 +44,39 @@ const TeamManagement = lazy(() => import('./pages/TeamManagement'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 
+const AppLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">
+    Carregando MedSystem...
+  </div>
+);
+
+const HomeRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <AppLoader />;
+
+  return user ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+};
+
+const LoginRoute = () => {
+  const { user, userProfile, loading } = useAuth();
+
+  if (loading) return <AppLoader />;
+  if (!user) return <LoginPage />;
+
+  return <Navigate to={userProfile?.onboardingComplete === true ? '/dashboard' : '/onboarding'} replace />;
+};
+
+const OnboardingRoute = () => {
+  const { user, userProfile, loading } = useAuth();
+
+  if (loading) return <AppLoader />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (userProfile?.onboardingComplete === true) return <Navigate to="/dashboard" replace />;
+
+  return <OnboardingPage />;
+};
+
 const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?: string, icon: any, label: string, active: boolean, subItems?: { label: string, to: string, icon: any, active: boolean }[], onClick?: () => void }) => {
   const [isExpanded, setIsExpanded] = useState(active || subItems?.some(s => s.active));
 
@@ -126,8 +159,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   if (!user) return <Navigate to="/login" />;
-  if (userProfile && !userProfile.onboardingComplete && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" />;
+  if (userProfile?.onboardingComplete !== true && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
   }
 
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
@@ -329,11 +362,11 @@ export default function App() {
   return (
     <FirebaseProvider>
       <Router>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando MedSystem...</div>}>
+        <Suspense fallback={<AppLoader />}>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/" element={<HomeRoute />} />
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/onboarding" element={<OnboardingRoute />} />
             <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
             <Route path="/patients" element={<MainLayout><PatientsPage /></MainLayout>} />
             <Route path="/agenda" element={<MainLayout><AgendaPage /></MainLayout>} />
