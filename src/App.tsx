@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { FirebaseProvider, useAuth } from './components/FirebaseProvider';
 import { 
@@ -157,6 +157,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   if (!user) return <Navigate to="/login" />;
   if (userProfile?.onboardingComplete !== true && location.pathname !== '/onboarding') {
@@ -197,6 +201,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           icon={Users} 
           label="Clínica" 
           active={location.pathname.startsWith('/patient') || location.pathname === '/agenda' || location.pathname === '/consultations'} 
+          onClick={() => setMobileMenuOpen(false)}
           subItems={[
             {
               label: 'Agenda',
