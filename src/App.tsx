@@ -313,13 +313,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const RootRedirect = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando MedSystem...</div>;
+  return user ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+};
+
 export default function App() {
   return (
     <FirebaseProvider>
       <Router>
         <Suspense fallback={<div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando MedSystem...</div>}>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
@@ -333,7 +339,7 @@ export default function App() {
             <Route path="/team" element={<MainLayout><TeamManagement /></MainLayout>} />
             <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </Suspense>
         <Toaster position="top-right" />

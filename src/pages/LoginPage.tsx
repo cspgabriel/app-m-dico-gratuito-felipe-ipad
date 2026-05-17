@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (user) return <Navigate to="/" />;
+  if (user) return <Navigate to="/dashboard" />;
 
   const handleAnonymousLogin = async () => {
     try {
