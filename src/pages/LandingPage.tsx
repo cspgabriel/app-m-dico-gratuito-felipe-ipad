@@ -69,16 +69,11 @@ export default function LandingPage() {
             <div className="flex items-center justify-center lg:justify-start gap-2 max-w-max mx-auto lg:mx-0 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 shadow-sm mb-2">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               <span className="text-amber-900 text-[11px] font-bold uppercase tracking-widest">
-                Beta aberto • Vagas limitadas
+                Vagas limitadas
               </span>
             </div>
-            <BrandLogo
-              className="justify-center lg:justify-start"
-              markClassName="w-16 h-16"
-              textClassName="text-4xl md:text-5xl font-black tracking-tight"
-            />
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-[#0D183D]">
-              Sistema inteligente para clínicas <span className="text-apple-blue">que querem crescer.</span>
+              Sistema inteligente para <span className="text-apple-blue">clínicas que querem crescer.</span>
             </h1>
             <p className="text-xl text-apple-gray-dark leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Prontuário, agenda, recibos e gestão em um só lugar, com visual limpo e rotina pensada para clínicas modernas.
