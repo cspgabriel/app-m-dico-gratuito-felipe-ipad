@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, Settings as SettingsIcon, CalendarCheck, CalendarX, CalendarClock, Clock, MapPin, Video } from 'lucide-react';
+import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, CalendarCheck, CalendarX, CalendarClock, Clock, MapPin, Video } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -121,13 +121,7 @@ export default function Dashboard() {
           </div>
           <p className="hidden xl:block text-base xl:text-lg text-gray-600 font-medium">Aqui está o resumo da sua clínica hoje.</p>
         </div>
-        <div className="grid grid-cols-3 xl:flex xl:flex-row gap-2 relative z-10 w-full xl:w-auto">
-          <Link to="/onboarding">
-            <Button variant="outline" className="w-full rounded-xl border-2 border-blue-200 bg-white/70 backdrop-blur text-blue-700 hover:bg-blue-50 h-10 xl:h-12 px-2 xl:px-6 font-bold flex flex-col xl:flex-row gap-0.5 xl:gap-2 justify-center items-center text-[11px] xl:text-sm">
-              <SettingsIcon size={16} />
-              <span className="truncate">Clínica</span>
-            </Button>
-          </Link>
+        <div className="grid grid-cols-2 xl:flex xl:flex-row gap-2 relative z-10 w-full xl:w-auto">
           {plan === 'basico' && (
             <Button variant="outline" className="w-full rounded-xl border-2 border-amber-400 text-amber-600 hover:bg-amber-50 h-10 xl:h-12 px-2 xl:px-6 font-bold flex flex-col xl:flex-row gap-0.5 xl:gap-2 justify-center items-center text-[11px] xl:text-sm">
               <Crown size={16} />

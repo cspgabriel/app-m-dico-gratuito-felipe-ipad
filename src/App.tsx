@@ -15,7 +15,6 @@ import {
   X,
   UsersRound,
   CreditCard,
-  LineChart,
   ChevronDown
 } from 'lucide-react';
 import { Button } from './components/ui/button';
@@ -160,43 +159,32 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           active={location.pathname === '/dashboard'}
           onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          icon={Users} 
-          label="Clínica" 
-          active={location.pathname.startsWith('/patient') || location.pathname === '/agenda' || location.pathname === '/consultations'} 
-          subItems={[
-            {
-              label: 'Agenda',
-              to: '/agenda',
-              icon: CalendarDays,
-              active: location.pathname === '/agenda'
-            },
-            {
-              label: 'Pacientes',
-              to: '/patients',
-              icon: Users,
-              active: location.pathname === '/patients' || location.pathname.startsWith('/patients/')
-            },
-            {
-              label: 'Consultas',
-              to: '/consultations',
-              icon: ClipboardList,
-              active: location.pathname === '/consultations'
-            }
-          ]}
-        />
-        <SidebarItem 
-          to="/reports" 
-          icon={BarChart} 
-          label="Relatórios" 
-          active={location.pathname === '/reports'}
+        <SidebarItem
+          to="/agenda"
+          icon={CalendarDays}
+          label="Agenda"
+          active={location.pathname === '/agenda'}
           onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          to="/marketing" 
-          icon={LineChart} 
-          label="Marketing" 
-          active={location.pathname === '/marketing'}
+        <SidebarItem
+          to="/patients"
+          icon={Users}
+          label="Pacientes"
+          active={location.pathname === '/patients' || location.pathname.startsWith('/patients/')}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
+          to="/consultations"
+          icon={ClipboardList}
+          label="Consultas"
+          active={location.pathname === '/consultations'}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
+          to="/reports"
+          icon={BarChart}
+          label="Relatórios"
+          active={location.pathname === '/reports'}
           onClick={() => setMobileMenuOpen(false)}
         />
         <SidebarItem 
