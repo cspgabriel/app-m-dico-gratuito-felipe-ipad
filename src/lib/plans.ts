@@ -12,7 +12,6 @@ export interface Plan {
   limits: {
     pacientes: number | 'unlimited';
     profissionais: number;
-    iaAnamnese: boolean;
     tissTuss: boolean;
     multiClinica: boolean;
   };
@@ -35,7 +34,6 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: {
       pacientes: 50,
       profissionais: 1,
-      iaAnamnese: false,
       tissTuss: false,
       multiClinica: false,
     },
@@ -48,7 +46,7 @@ export const PLANS: Record<PlanId, Plan> = {
     description: 'Para consultórios em crescimento que precisam de eficiência.',
     features: [
       'Pacientes Ilimitados',
-      'Prontuário com Anamnese em IA (Beta)',
+      'Prontuário eletrônico completo',
       'Faturamento TISS/TUSS Automático',
       'Controle Financeiro (Fluxo de Caixa)',
     ],
@@ -56,7 +54,6 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: {
       pacientes: 'unlimited',
       profissionais: 1,
-      iaAnamnese: true,
       tissTuss: true,
       multiClinica: false,
     },
@@ -76,7 +73,6 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: {
       pacientes: 'unlimited',
       profissionais: 10,
-      iaAnamnese: true,
       tissTuss: true,
       multiClinica: true,
     },

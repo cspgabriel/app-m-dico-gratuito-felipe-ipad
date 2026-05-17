@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, BrainCircuit, Settings as SettingsIcon, CalendarCheck, CalendarX, CalendarClock, Clock, MapPin, Video } from 'lucide-react';
+import { Users, Calendar, Activity, TrendingUp, PlusCircle, Lock, Crown, ChevronRight, FileText, Sparkles, Settings as SettingsIcon, CalendarCheck, CalendarX, CalendarClock, Clock, MapPin, Video, Receipt } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -215,23 +215,23 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-           {/* Section Produtividade & IA */}
+           {/* Section Produtividade */}
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <PremiumFeatureCard 
-                 title="Anamnese com IA"
-                 description="Deixe a inteligência artificial gerar resumos perfeitos a partir da sua voz."
-                 icon={BrainCircuit}
-                 isLocked={plan === 'basico'}
-                 color="indigo"
-                 onClick={() => navigate('/patients')}
-              />
-              <PremiumFeatureCard 
-                 title="Faturamento Automático"
-                 description="Gere guias TISS/TUSS com um clique."
+              <PremiumFeatureCard
+                 title="Faturamento TISS/TUSS"
+                 description="Gere guias TISS/TUSS automaticamente para convênios."
                  icon={FileText}
                  isLocked={plan === 'basico'}
                  color="emerald"
                  onClick={() => navigate('/billing')}
+              />
+              <PremiumFeatureCard
+                 title="Controle Financeiro"
+                 description="Fluxo de caixa, repasses e relatórios de produtividade."
+                 icon={Receipt}
+                 isLocked={plan === 'basico'}
+                 color="indigo"
+                 onClick={() => navigate('/reports')}
               />
            </div>
 

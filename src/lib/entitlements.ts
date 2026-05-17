@@ -9,7 +9,6 @@ export interface Entitlements {
   isFree: boolean;
   maxPacientes: number | 'unlimited';
   maxProfissionais: number;
-  canUseAI: boolean;
   canUseTiss: boolean;
   canMultiClinica: boolean;
   canManageBilling: boolean;
@@ -35,7 +34,6 @@ export function usePlan(): Entitlements {
     isFree: !!plan.free,
     maxPacientes: plan.limits.pacientes,
     maxProfissionais: plan.limits.profissionais,
-    canUseAI: plan.limits.iaAnamnese && isActive,
     canUseTiss: plan.limits.tissTuss && isActive,
     canMultiClinica: plan.limits.multiClinica && isActive,
     canManageBilling: role === 'admin',

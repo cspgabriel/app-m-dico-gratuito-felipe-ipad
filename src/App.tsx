@@ -25,7 +25,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { auth } from './lib/firebase';
 import { signOut } from 'firebase/auth';
 import { CalendarDays } from 'lucide-react';
-import AIChatbot from './components/AIChatbot';
 import PWAInstallPrompt, { PWAInstallButton } from './components/PWAInstallPrompt';
 
 // Lazy load pages
@@ -321,7 +320,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </AnimatePresence>
           </div>
         </ScrollArea>
-        <AIChatbot />
       </main>
     </div>
   );

@@ -291,7 +291,7 @@ export default function LandingPage() {
                </li>
                <li className="flex items-start gap-3">
                  <div className="mt-1 text-blue-200">✓</div>
-                 <p className="text-blue-50 font-medium">Atendimento humanizado: a Anamnese assistida por IA e os atalhos de transcrição deixam você focar no olho a olho.</p>
+                 <p className="text-blue-50 font-medium">Atendimento humanizado: modelos de anamnese rápida e atalhos de prescrição para você focar no olho a olho.</p>
                </li>
                <li className="flex items-start gap-3">
                  <div className="mt-1 text-blue-200">✓</div>
@@ -423,7 +423,7 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Pacientes Ilimitados</li>
-                <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Prontuário com Anamnese em IA (Beta)</li>
+                <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Prontuário eletrônico completo</li>
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Faturamento TISS/TUSS Automático</li>
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Controle Financeiro (Fluxo de Caixa)</li>
               </ul>

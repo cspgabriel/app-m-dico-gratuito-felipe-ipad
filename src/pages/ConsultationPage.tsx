@@ -9,20 +9,16 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { 
-  ArrowLeft, 
-  Sparkles, 
-  Save, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Save,
+  CheckCircle2,
   Database,
   Stethoscope,
   Microscope,
   Search
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
-import { usePlan } from '../lib/entitlements';
-import { Lock } from 'lucide-react';
 
 // Mock CID data
 const CID_MOCK = [
@@ -48,7 +44,6 @@ export default function ConsultationPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, tenantId } = useAuth();
-  const { canUseAI, planName } = usePlan();
   const [patient, setPatient] = useState<Paciente | null>(null);
   const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'evolution');
 
@@ -63,9 +58,6 @@ export default function ConsultationPage() {
   const [tussSearch, setTussSearch] = useState('');
   const [selectedTuss, setSelectedTuss] = useState<string[]>([]);
 
-  const [isAiProcessing, setIsAiProcessing] = useState(false);
-  const [aiInput, setAiInput] = useState('');
-
   useEffect(() => {
     if (!patientId) return;
     const fetchPatient = async () => {
@@ -75,36 +67,6 @@ export default function ConsultationPage() {
     };
     fetchPatient();
   }, [patientId]);
-
-  const handleAiProcess = async () => {
-    if (!aiInput) return;
-    if (!canUseAI) {
-      toast.error(`Anamnese por IA disponível apenas nos planos Profissional e Multi-Clínicas.`);
-      return;
-    }
-    try {
-      setIsAiProcessing(true);
-      const res = await fetch('/api/ai/process-anamnesis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: aiInput }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setQueixa(data.queixaPrincipal || '');
-      setHda(data.hda || '');
-      setExameFisico(data.exameFisico || '');
-      setConduta(data.conduta || '');
-      toast.success('Informações processadas e organizadas com sucesso!');
-      setAiInput('');
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao processar as informações.');
-    } finally {
-      setIsAiProcessing(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!user || !patientId || !tenantId) return;
@@ -158,43 +120,6 @@ export default function ConsultationPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="apple-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-md flex items-center gap-2">
-                <Sparkles size={18} className="text-apple-blue" />
-                Anamnese Estruturada Automática
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!canUseAI && (
-                <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 flex items-start gap-3">
-                  <Lock size={18} className="text-apple-blue mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900">Disponível no plano Profissional</p>
-                    <p className="text-xs text-gray-600 mb-3">Você está no plano {planName}. Faça upgrade para estruturar anamneses com IA em segundos.</p>
-                    <Link to="/billing/checkout?plan=profissional">
-                      <Button size="sm" className="rounded-lg bg-apple-blue hover:bg-blue-600 text-white">Fazer Upgrade</Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
-              <Textarea
-                placeholder="Cole aqui o texto da consulta ou dite as observações para o sistema organizar..."
-                className="min-h-[120px] rounded-xl bg-white/40 border border-white/20 focus-visible:ring-apple-blue resize-none"
-                value={aiInput}
-                onChange={e => setAiInput(e.target.value)}
-                disabled={!canUseAI}
-              />
-              <Button
-                onClick={handleAiProcess}
-                className="w-full bg-white/60 hover:bg-white/80 text-[#007AFF] font-bold rounded-xl gap-2 border-none backdrop-blur-sm"
-                disabled={isAiProcessing || !canUseAI}
-              >
-                {!canUseAI ? <><Lock size={16} /> Bloqueado pelo plano</> : isAiProcessing ? 'Processando...' : 'Organizar Automaticamente'}
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card className="apple-card">
             <CardContent className="pt-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
