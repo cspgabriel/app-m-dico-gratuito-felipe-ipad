@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { PreApproval } from 'mercadopago';
-import { mpClient } from '../_lib/mp';
-import { firestore, admin } from '../_lib/firebase';
-import { verifyAuth, getAppUrl } from '../_lib/auth';
-import { PLAN_PRICES, mapPreapprovalStatus, type PlanKey } from '../_lib/plans';
+import { mpClient } from '../_lib/mp.js';
+import { firestore, admin } from '../_lib/firebase.js';
+import { verifyAuth, getAppUrl } from '../_lib/auth.js';
+import { PLAN_PRICES, mapPreapprovalStatus, type PlanKey } from '../_lib/plans.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).end();

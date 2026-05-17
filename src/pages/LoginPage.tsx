@@ -122,6 +122,7 @@ export default function LoginPage() {
                   <Mail className="absolute left-3 top-3 text-apple-gray-dark" size={18} />
                   <Input 
                     type="email" 
+                    autoComplete="email"
                     placeholder="E-mail profissional" 
                     className="pl-10 h-12 rounded-xl bg-apple-gray border-none focus-visible:ring-apple-blue"
                     value={email}
@@ -135,6 +136,7 @@ export default function LoginPage() {
                   <Lock className="absolute left-3 top-3 text-apple-gray-dark" size={18} />
                   <Input 
                     type="password" 
+                    autoComplete="current-password"
                     placeholder="Sua senha" 
                     className="pl-10 h-12 rounded-xl bg-apple-gray border-none focus-visible:ring-apple-blue"
                     value={password}

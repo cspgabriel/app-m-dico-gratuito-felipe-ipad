@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { PreApproval } from 'mercadopago';
-import { mpClient } from '../_lib/mp';
-import { firestore, admin } from '../_lib/firebase';
-import { verifyAuth } from '../_lib/auth';
+import { mpClient } from '../_lib/mp.js';
+import { firestore, admin } from '../_lib/firebase.js';
+import { verifyAuth } from '../_lib/auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).end();

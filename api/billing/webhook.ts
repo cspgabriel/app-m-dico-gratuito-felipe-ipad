@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 import { Payment, PreApproval } from 'mercadopago';
-import { mpClient, mpWebhookSecret } from '../_lib/mp';
-import { firestore, admin } from '../_lib/firebase';
-import { mapPreapprovalStatus, inferPlanFromReason } from '../_lib/plans';
+import { mpClient, mpWebhookSecret } from '../_lib/mp.js';
+import { firestore, admin } from '../_lib/firebase.js';
+import { mapPreapprovalStatus, inferPlanFromReason } from '../_lib/plans.js';
 
 // MP signs a manifest (`id:...;request-id:...;ts:...;`), not the body —
 // so the default JSON body parser is fine.
