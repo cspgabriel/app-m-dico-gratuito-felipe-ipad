@@ -114,6 +114,18 @@
     "/pacientes/{pacienteId}/prescricoes/{prescricaoId}": {
       "schema": "Prescricao",
       "description": "Prescrições emitidas"
+    },
+    "/pacientes/{pacienteId}/exames/{exameId}": {
+      "schema": "Exame",
+      "description": "Exames e documentos do paciente"
+    },
+    "/agendamentos/{agendaId}": {
+      "schema": "Agendamento",
+      "description": "Agendamentos da clínica"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Pagamentos via Mercado Pago"
     }
   }
 }

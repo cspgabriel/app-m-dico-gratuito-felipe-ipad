@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { CreditCard, Receipt, FileCheck, Download } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import MercadoPagoCheckout from '../components/MercadoPagoCheckout';
 
 export default function BillingPage() {
   return (
@@ -40,6 +41,9 @@ export default function BillingPage() {
               <Button variant="secondary" className="rounded-xl text-apple-blue bg-white hover:bg-gray-100 font-bold border-none">
                 Alterar Plano
               </Button>
+            </div>
+            <div className="pt-2">
+              <MercadoPagoCheckout planName="Clínica Pro – Mensal" amount={149.0} label="Renovar com Mercado Pago" />
             </div>
           </CardContent>
         </Card>

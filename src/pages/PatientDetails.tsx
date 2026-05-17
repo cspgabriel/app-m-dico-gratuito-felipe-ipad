@@ -108,7 +108,7 @@ export default function PatientDetails() {
 
     try {
       setUploading(true);
-      const storageRef = ref(storage, `exames/${id}/${Date.now()}_${file.name}`);
+      const storageRef = ref(storage, `pacientes/${user.uid}/${id}/${Date.now()}_${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on(
