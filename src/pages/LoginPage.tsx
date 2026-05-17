@@ -7,16 +7,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { ClipboardList, Mail, Lock, UserCog } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../components/FirebaseProvider';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 
 export default function LoginPage() {
   const { user } = useAuth();
+  const [params] = useSearchParams();
+  const next = params.get('next');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (user) return <Navigate to="/" />;
+  if (user) return <Navigate to={next || '/dashboard'} />;
 
   const handleAnonymousLogin = async () => {
     try {

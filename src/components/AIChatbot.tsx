@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User as UserIcon } from 'lucide-react';
 import { useAuth } from './FirebaseProvider';
+import { usePlan } from '../lib/entitlements';
 import { collection, query, where, getDocs, collectionGroup } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Button } from './ui/button';
@@ -14,6 +15,7 @@ interface ChatMessage {
 
 export default function AIChatbot() {
   const { tenantId, userProfile } = useAuth();
+  const { canUseAI } = usePlan();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -105,6 +107,7 @@ export default function AIChatbot() {
   };
 
   if (!tenantId) return null; // Don't show if not logged in
+  if (!canUseAI) return null; // AI assistant requires a paid plan
 
   return (
     <>
