@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         items: [
           {
             id: plan!,
-            title: `MedSystem — Plano ${planDef.name}`,
+            title: `Clinicafy — Plano ${planDef.name}`,
             description: `Assinatura mensal do plano ${planDef.name}`,
             quantity: 1,
             currency_id: 'BRL',
@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           pending: `${appUrl}/billing/pending?plan=${plan}`,
         },
         auto_return: 'approved',
-        statement_descriptor: 'MEDSYSTEM',
+        statement_descriptor: 'Clinicafy',
         notification_url: `${appUrl}/api/billing/webhook`,
       },
     });

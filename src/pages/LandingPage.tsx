@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
 import {
-  ClipboardList,
   ShieldCheck,
   ChevronRight,
   Users,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/FirebaseProvider';
+import BrandLogo, { BrandMark } from '@/components/BrandLogo';
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -26,19 +26,14 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen selection:bg-apple-blue/30 selection:text-apple-blue font-sans pb-20 lg:pb-0">
       <Helmet>
-        <title>MedSystem — Prontuário, agenda e gestão para consultórios médicos</title>
+        <title>Clinicafy — Prontuário, agenda e gestão para consultórios médicos</title>
         <meta name="description" content="Sistema completo para consultórios e clínicas: prontuário eletrônico, agenda, faturamento TISS/TUSS e financeiro. Comece grátis, sem cartão de crédito." />
-        <link rel="canonical" href="https://medsystem.app/" />
+        <link rel="canonical" href="https://clinicafy.app/" />
       </Helmet>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-white/20 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-apple-blue rounded-lg flex shrink-0 items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <ClipboardList size={20} />
-            </div>
-            <span className="text-lg font-bold tracking-tight hidden sm:block">MedSystem</span>
-          </div>
+          <BrandLogo markClassName="w-8 h-8" textClassName="text-lg font-black tracking-tight hidden sm:block" />
           <div className="flex items-center gap-2 sm:gap-4">
             {user ? (
               <Link to="/dashboard">
@@ -66,8 +61,8 @@ export default function LandingPage() {
           <div className="absolute top-0 -left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-[100px] -z-10 animate-pulse"></div>
           
           {/* Left Column */}
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
+          <motion.div
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             className="flex-1 text-center lg:text-left space-y-8"
           >
@@ -77,11 +72,16 @@ export default function LandingPage() {
                 Beta aberto • Vagas limitadas
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
-              Foque no paciente, nós cuidamos <span className="text-apple-blue">da gestão.</span>
+            <BrandLogo
+              className="justify-center lg:justify-start"
+              markClassName="w-16 h-16"
+              textClassName="text-4xl md:text-5xl font-black tracking-tight"
+            />
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-[#0D183D]">
+              Sistema inteligente para clínicas <span className="text-apple-blue">que querem crescer.</span>
             </h1>
             <p className="text-xl text-apple-gray-dark leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Transforme a rotina do seu consultório com um sistema inteligente, rápido e sem complicações. Todas as ferramentas em um só lugar.
+              Prontuário, agenda, recibos e gestão em um só lugar, com visual limpo e rotina pensada para clínicas modernas.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center pt-2">
               <Link to="/login">
@@ -98,7 +98,7 @@ export default function LandingPage() {
 
           {/* Right Column — Dashboard Mockup */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="flex-1 w-full max-w-2xl relative mt-12 lg:mt-0"
@@ -135,7 +135,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="absolute -inset-4 bg-gradient-to-tr from-blue-400 to-purple-400 rounded-[40px] blur-3xl opacity-20 -z-10 mt-12"></div>
+            <div className="absolute -inset-4 bg-gradient-to-tr from-[#1677FF] to-[#00D1B2] rounded-[40px] blur-3xl opacity-20 -z-10 mt-12"></div>
           </motion.div>
         </div>
       </section>
@@ -220,7 +220,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight"
           >
-            Conheça o MedSystem: <br />
+            Conheça o Clinicafy: <br />
             <span className="text-blue-400">Plataforma Multi-Clínicas de Nova Geração.</span>
           </motion.h2>
           <motion.p 
@@ -247,7 +247,7 @@ export default function LandingPage() {
                <div className="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center">
                  <FileWarning size={20} />
                </div>
-               <h3 className="text-2xl font-bold text-gray-200">Clínicas sem MedSystem</h3>
+               <h3 className="text-2xl font-bold text-gray-200">Clínicas sem Clinicafy</h3>
              </div>
              <ul className="space-y-4 relative z-10">
                <li className="flex items-start gap-3">
@@ -281,7 +281,7 @@ export default function LandingPage() {
                <div className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center">
                  <ShieldCheck size={20} />
                </div>
-               <h3 className="text-2xl font-bold text-white">Clínicas com MedSystem</h3>
+               <h3 className="text-2xl font-bold text-white">Clínicas com Clinicafy</h3>
              </div>
              <ul className="space-y-4 relative z-10">
                <li className="flex items-start gap-3">
@@ -461,7 +461,7 @@ export default function LandingPage() {
       <section className="py-24 px-6 bg-gray-50 border-y border-gray-200">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-4xl font-black tracking-tight text-center text-gray-900 mb-4">
-            Por que trocar pelo MedSystem.
+            Por que trocar pelo Clinicafy.
           </h2>
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
             Comparação honesta com os sistemas mais usados pelos consultórios brasileiros.
@@ -471,7 +471,7 @@ export default function LandingPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left p-4 font-bold text-gray-700">Recurso</th>
-                  <th className="p-4 font-bold text-apple-blue">MedSystem</th>
+                  <th className="p-4 font-bold text-apple-blue">Clinicafy</th>
                   <th className="p-4 font-bold text-gray-500">Outros</th>
                 </tr>
               </thead>
@@ -533,7 +533,7 @@ export default function LandingPage() {
             </div>
             <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-colors bg-gray-50/50">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Preciso instalar algo no meu computador?</h4>
-              <p className="text-gray-600 font-medium">Não. O MedSystem é 100% em nuvem. Você pode acessar de qualquer computador, tablet ou celular usando apenas o seu navegador de internet, de forma segura.</p>
+              <p className="text-gray-600 font-medium">Não. O Clinicafy é 100% em nuvem. Você pode acessar de qualquer computador, tablet ou celular usando apenas o seu navegador de internet, de forma segura.</p>
             </div>
             <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-colors bg-gray-50/50">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Posso testar antes de pagar o plano Profissional?</h4>
@@ -556,7 +556,7 @@ export default function LandingPage() {
               Experimente a gestão médica sem fricção.
             </h2>
             <p className="text-xl font-medium text-gray-600 mb-10 max-w-2xl">
-              Comece a usar o MedSystem hoje mesmo e recupere o controle do seu tempo.
+              Comece a usar o Clinicafy hoje mesmo e recupere o controle do seu tempo.
             </p>
             <Link to="/login" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto h-16 px-12 rounded-full bg-apple-blue hover:bg-blue-600 text-white text-lg font-bold shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:shadow-[0_0_60px_rgba(37,99,235,0.6)] transition-all">
@@ -574,12 +574,7 @@ export default function LandingPage() {
       <footer className="pt-20 pb-12 px-6 border-t border-gray-200 bg-[#0B1120] text-gray-400">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-16">
           <div className="flex flex-col gap-6 w-full md:w-1/3">
-            <div className="flex items-center gap-2 text-white">
-              <div className="w-10 h-10 bg-apple-blue rounded-xl flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
-                <ClipboardList size={22} />
-              </div>
-              <span className="font-bold text-2xl tracking-tight">MedSystem</span>
-            </div>
+            <BrandLogo dark markClassName="w-10 h-10" textClassName="font-black text-2xl tracking-tight" />
             <p className="text-sm text-gray-400 font-medium leading-relaxed">
               A suíte clínica definitiva para modernizar o seu consultório. Desenvolvida para que profissionais de saúde foquem no que realmente importa: os pacientes.
             </p>
@@ -609,7 +604,7 @@ export default function LandingPage() {
         
         <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm font-medium tracking-wide text-gray-500">
-            © 2026 MedSystem Clinical Suite. Todos os direitos reservados. Feito no Brasil.
+            © 2026 Clinicafy. Todos os direitos reservados. Feito no Brasil.
           </p>
           <div className="flex gap-4">
              <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer text-white">
@@ -637,7 +632,7 @@ function DashboardMockup() {
         <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
         <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
         <div className="ml-3 px-3 py-1 rounded-md bg-white border border-gray-200 text-[10px] text-gray-400 font-medium flex-1 max-w-[260px] truncate">
-          medsystem.app/dashboard
+          clinicafy.app/dashboard
         </div>
       </div>
 
@@ -645,9 +640,7 @@ function DashboardMockup() {
         {/* Sidebar */}
         <aside className="w-[110px] sm:w-[140px] bg-white border-r border-gray-100 p-2.5 sm:p-3 hidden sm:flex flex-col gap-1">
           <div className="flex items-center gap-2 mb-3 px-1.5">
-            <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center text-white">
-              <ClipboardList size={12} />
-            </div>
+            <BrandMark className="w-6 h-6" />
             <span className="text-[10px] font-black text-gray-800">Clínica</span>
           </div>
           <div className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-2 py-1.5">

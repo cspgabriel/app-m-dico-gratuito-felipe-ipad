@@ -190,7 +190,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="text-sm text-apple-gray-dark">
-              <p className="font-bold text-gray-800">Acesse o MedSystem como um aplicativo nativo.</p>
+              <p className="font-bold text-gray-800">Acesse o Clinicafy como um aplicativo nativo.</p>
               <p className="mt-1">Funciona offline, abre em tela cheia e tem ícone próprio na home.</p>
             </div>
             <PWAInstallButton

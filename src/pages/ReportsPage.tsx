@@ -153,7 +153,7 @@ export default function ReportsPage() {
                   cursor={{fill: '#f3f4f6'}}
                   contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} 
                 />
-                <Bar dataKey="consultas" fill="#007AFF" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="consultas" fill="#1677FF" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download, Share, Plus, X, Smartphone } from 'lucide-react';
 import { Button } from './ui/button';
+import { BrandMark } from './BrandLogo';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -95,11 +96,9 @@ export default function PWAInstallPrompt() {
             className="fixed bottom-4 left-4 right-4 lg:left-auto lg:right-6 lg:bottom-6 lg:max-w-sm z-[60]"
           >
             <div className="bg-white rounded-2xl shadow-2xl border border-black/5 p-4 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/30">
-                <Smartphone size={22} />
-              </div>
+              <BrandMark className="w-12 h-12 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm">Instalar MedSystem</p>
+                <p className="font-bold text-sm">Instalar Clinicafy</p>
                 <p className="text-xs text-gray-500 truncate">
                   Acesso rápido direto da tela inicial
                 </p>
@@ -143,9 +142,7 @@ export default function PWAInstallPrompt() {
             >
               <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white mx-auto mb-3 shadow-lg shadow-blue-500/30">
-                  <Smartphone size={28} />
-                </div>
+                <BrandMark className="w-16 h-16 mx-auto mb-3" />
                 <h3 className="text-xl font-black">Instalar no iPad / iPhone</h3>
                 <p className="text-sm text-gray-500 mt-1">
                   Adicione à tela inicial em 2 passos
@@ -275,11 +272,9 @@ export function PWAInstallButton({
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                    <Smartphone size={22} />
-                  </div>
+                  <BrandMark className="w-12 h-12" />
                   <div>
-                    <h3 className="text-lg font-black">Instalar MedSystem</h3>
+                    <h3 className="text-lg font-black">Instalar Clinicafy</h3>
                     <p className="text-xs text-gray-500">
                       Como instalar no seu dispositivo
                     </p>
@@ -323,7 +318,7 @@ export function PWAInstallButton({
                   <ul className="space-y-2 text-sm">
                     <li className="bg-gray-50 rounded-2xl p-3">
                       <strong>Chrome / Edge:</strong> ícone <Download size={12} className="inline" /> na
-                      barra de endereço, ou Menu (⋮) → <em>Instalar MedSystem</em>.
+                      barra de endereço, ou Menu (⋮) → <em>Instalar Clinicafy</em>.
                     </li>
                     <li className="bg-gray-50 rounded-2xl p-3">
                       <strong>Safari (Mac):</strong> Arquivo → <em>Adicionar ao Dock</em>.

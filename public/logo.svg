@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180">
+  <defs>
+    <linearGradient id="m" x1="12" y1="156" x2="156" y2="12" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1677FF"/>
+      <stop offset=".55" stop-color="#2CC7FF"/>
+      <stop offset="1" stop-color="#00D1B2"/>
+    </linearGradient>
+    <linearGradient id="t" x1="430" y1="35" x2="650" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F4F7"/>
+      <stop offset=".62" stop-color="#F2F4F7"/>
+      <stop offset=".63" stop-color="#1677FF"/>
+      <stop offset="1" stop-color="#2A8CFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="760" height="180" rx="28" fill="#0D183D"/>
+  <g transform="translate(36 22)">
+    <path d="M56 0h48c17.7 0 32 14.3 32 32v24h24v48h-24v24c0 17.7-14.3 32-32 32H56c-17.7 0-32-14.3-32-32v-24H0V56h24V32C24 14.3 38.3 0 56 0Zm0 20c-6.6 0-12 5.4-12 12v44H20v8h44v44c0 6.6 5.4 12 12 12h48c6.6 0 12-5.4 12-12V84h44v-8h-44V32c0-6.6-5.4-12-12-12H56Z" fill="url(#m)"/>
+    <path d="M72 54h16v52H72zM54 72h52v16H54z" fill="#F2F4F7"/>
+  </g>
+  <text x="235" y="112" font-family="Poppins, Inter, Arial, sans-serif" font-size="76" font-weight="800" fill="url(#t)">Clinicafy</text>
+  <text x="238" y="146" font-family="Poppins, Inter, Arial, sans-serif" font-size="20" font-weight="400" fill="#F2F4F7">Sistema inteligente para clínicas que querem crescer.</text>
+</svg>

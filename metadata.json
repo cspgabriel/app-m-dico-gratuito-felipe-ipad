@@ -1,5 +1,5 @@
 {
-  "name": "MedSystem",
+  "name": "Clinicafy",
   "description": "Prontuário eletrônico médico premium para iPad com anamnese inteligente, CID-10, TUSS e exportação em PDF.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

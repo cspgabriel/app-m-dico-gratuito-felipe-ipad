@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const appUrl = getAppUrl(req);
     const preapproval = await new PreApproval(mpClient).create({
       body: {
-        reason: `MedSystem — Plano ${planDef.name}`,
+        reason: `Clinicafy — Plano ${planDef.name}`,
         external_reference: decoded.uid,
         payer_email: email,
         back_url: `${appUrl}/billing/success?plan=${plan}`,

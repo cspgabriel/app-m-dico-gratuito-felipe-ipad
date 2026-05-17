@@ -4,10 +4,11 @@ import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, signInWithEmai
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
-import { ClipboardList, Mail, Lock, UserCog } from 'lucide-react';
+import { Mail, Lock, UserCog } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../components/FirebaseProvider';
 import { Navigate, useSearchParams } from 'react-router-dom';
+import BrandLogo from '../components/BrandLogo';
 
 export default function LoginPage() {
   const { user } = useAuth();
@@ -104,10 +105,12 @@ export default function LoginPage() {
       >
         <Card className="w-full max-w-md shadow-2xl border-none rounded-2xl overflow-hidden">
           <CardHeader className="text-center pt-10">
-            <div className="mx-auto w-16 h-16 bg-apple-blue rounded-2xl flex items-center justify-center text-white shadow-blue-500/20 shadow-xl mb-4">
-              <ClipboardList size={32} />
-            </div>
-            <CardTitle className="text-3xl font-bold tracking-tight">MedSystem</CardTitle>
+            <BrandLogo
+              className="mx-auto mb-4 flex flex-col items-center gap-2"
+              markClassName="w-16 h-16"
+              textClassName="text-3xl font-black tracking-tight"
+            />
+            <CardTitle className="sr-only">Clinicafy</CardTitle>
             <CardDescription className="text-apple-gray-dark italic">
               Seu consultório inteligente no iPad
             </CardDescription>

@@ -181,7 +181,7 @@ async function startServer() {
           items: [
             {
               id: plan,
-              title: `MedSystem — Plano ${planDef.name}`,
+              title: `Clinicafy — Plano ${planDef.name}`,
               description: `Assinatura mensal do plano ${planDef.name}`,
               quantity: 1,
               currency_id: "BRL",
@@ -197,7 +197,7 @@ async function startServer() {
             pending: `${appUrl}/#/billing/pending?plan=${plan}`,
           },
           auto_return: "approved",
-          statement_descriptor: "MEDSYSTEM",
+          statement_descriptor: "Clinicafy",
           notification_url: `${appUrl}/api/billing/webhook`,
         },
       });
@@ -241,7 +241,7 @@ async function startServer() {
       const appUrl = getAppUrl(req);
       const preapproval = await new PreApproval(mpClient).create({
         body: {
-          reason: `MedSystem — Plano ${planDef.name}`,
+          reason: `Clinicafy — Plano ${planDef.name}`,
           external_reference: decoded.uid,
           payer_email: email,
           back_url: `${appUrl}/#/billing/success?plan=${plan}`,

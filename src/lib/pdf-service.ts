@@ -19,7 +19,7 @@ export function generatePDF(patient: Paciente, consultations: Consulta[], anamne
   doc.setFontSize(24);
   doc.setTextColor(...headerColor);
   doc.setFont('helvetica', 'bold');
-  doc.text('MedSystem Clinical Suite', marginX, y);
+  doc.text('Clinicafy', marginX, y);
   
   doc.setFontSize(10);
   doc.setTextColor(150, 150, 150);

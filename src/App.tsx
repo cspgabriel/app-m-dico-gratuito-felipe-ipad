@@ -27,6 +27,7 @@ import { auth } from './lib/firebase';
 import { signOut } from 'firebase/auth';
 import { CalendarDays } from 'lucide-react';
 import PWAInstallPrompt, { PWAInstallButton } from './components/PWAInstallPrompt';
+import { BrandMark } from './components/BrandLogo';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -141,12 +142,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           {userProfile?.logoUrl ? (
             <img src={userProfile.logoUrl} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-lg" />
           ) : (
-            <div className="w-10 h-10 bg-apple-blue rounded-xl flex items-center justify-center text-white shadow-blue-500/30 shadow-lg">
-              <ClipboardList size={24} />
+            <div className="w-10 h-10 flex items-center justify-center shadow-blue-500/30 shadow-lg rounded-xl">
+              <BrandMark className="w-10 h-10" />
             </div>
           )}
           <h1 className="text-xl font-bold tracking-tight text-slate-800 leading-tight">
-            {userProfile?.clinicName || 'MedSystem'}
+            {userProfile?.clinicName || 'Clinicafy'}
           </h1>
         </div>
         {!userProfile?.clinicName && (
@@ -257,11 +258,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           {userProfile?.logoUrl ? (
             <img src={userProfile.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
           ) : (
-            <div className="w-8 h-8 bg-apple-blue rounded-lg flex items-center justify-center text-white shrink-0">
-              <ClipboardList size={18} />
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <BrandMark className="w-8 h-8" />
             </div>
           )}
-          <span className="font-bold truncate">{userProfile?.clinicName || 'MedSystem'}</span>
+          <span className="font-bold truncate">{userProfile?.clinicName || 'Clinicafy'}</span>
         </div>
         <button onClick={toggleMenu} className="p-2 rounded-full hover:bg-black/5">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -327,7 +328,7 @@ export default function App() {
     <HelmetProvider>
     <FirebaseProvider>
       <Router>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando MedSystem...</div>}>
+        <Suspense fallback={<div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando Clinicafy...</div>}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />

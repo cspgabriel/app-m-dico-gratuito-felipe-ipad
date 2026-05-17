@@ -149,7 +149,7 @@ export default function OnboardingPage() {
       await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
       await ensureFreeSubscription(user.uid);
       await refreshProfile();
-      toast.success('Tudo pronto! Bem-vindo(a) ao MedSystem.');
+      toast.success('Tudo pronto! Bem-vindo(a) ao Clinicafy.');
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

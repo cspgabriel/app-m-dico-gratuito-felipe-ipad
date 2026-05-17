@@ -62,7 +62,7 @@ function exportAgendaICS(events: AgendaEvent[]) {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//MedSystem//Agenda//PT-BR',
+    'PRODID:-//Clinicafy//Agenda//PT-BR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
@@ -70,7 +70,7 @@ function exportAgendaICS(events: AgendaEvent[]) {
     const end = new Date(e.start.getTime() + e.durationMin * 60_000);
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${e.id}@medsystem`,
+      `UID:${e.id}@Clinicafy`,
       `DTSTAMP:${now}`,
       `DTSTART:${fmtICS(e.start)}`,
       `DTEND:${fmtICS(end)}`,

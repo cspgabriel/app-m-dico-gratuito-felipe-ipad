@@ -13,4 +13,4 @@ Disallow: /billing
 Disallow: /settings
 Disallow: /onboarding
 
-Sitemap: https://medsystem.app/sitemap.xml
+Sitemap: https://clinicafy.app/sitemap.xml
