@@ -4,6 +4,8 @@ import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/fires
 import { db, auth } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
+import { SPECIALTY_TEMPLATES, templatesForSpecialty } from '../lib/specialty-templates';
+import { FileText as FileTextIcon, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -43,7 +45,7 @@ export default function ConsultationPage() {
   const { patientId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, tenantId } = useAuth();
+  const { user, tenantId, userProfile } = useAuth();
   const [patient, setPatient] = useState<Paciente | null>(null);
   const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'evolution');
 
@@ -57,6 +59,21 @@ export default function ConsultationPage() {
   
   const [tussSearch, setTussSearch] = useState('');
   const [selectedTuss, setSelectedTuss] = useState<string[]>([]);
+  const [hipoteseDiagnostica, setHipoteseDiagnostica] = useState('');
+
+  const specialtyTemplates = templatesForSpecialty(userProfile?.specialty);
+  const availableTemplates = specialtyTemplates.length > 0 ? specialtyTemplates : SPECIALTY_TEMPLATES;
+
+  const applyTemplate = (templateId: string) => {
+    const tpl = SPECIALTY_TEMPLATES.find(t => t.id === templateId);
+    if (!tpl) return;
+    if (tpl.fields.queixa) setQueixa(tpl.fields.queixa);
+    if (tpl.fields.hda) setHda(tpl.fields.hda);
+    if (tpl.fields.exameFisico) setExameFisico(tpl.fields.exameFisico);
+    if (tpl.fields.conduta) setConduta(tpl.fields.conduta);
+    if (tpl.fields.hipoteseDiagnostica) setHipoteseDiagnostica(tpl.fields.hipoteseDiagnostica);
+    toast.success(`Template "${tpl.name}" aplicado. Edite à vontade.`);
+  };
 
   useEffect(() => {
     if (!patientId) return;
@@ -120,6 +137,33 @@ export default function ConsultationPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {availableTemplates.length > 0 && (
+            <Card className="apple-card border-blue-100 bg-blue-50/30">
+              <CardContent className="pt-5 pb-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="p-2 rounded-lg bg-apple-blue text-white shrink-0">
+                      <FileTextIcon size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-900">Template por especialidade</p>
+                      <p className="text-xs text-gray-600">Preenchimento rápido baseado em padrões clínicos. Edite à vontade.</p>
+                    </div>
+                  </div>
+                  <select
+                    onChange={(e) => { if (e.target.value) applyTemplate(e.target.value); e.target.value = ''; }}
+                    className="rounded-xl border border-gray-200 bg-white h-10 px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-apple-blue/30 w-full sm:w-auto"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Aplicar template…</option>
+                    {availableTemplates.map(t => (
+                      <option key={t.id} value={t.id}>{t.specialty} — {t.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <Card className="apple-card">
             <CardContent className="pt-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

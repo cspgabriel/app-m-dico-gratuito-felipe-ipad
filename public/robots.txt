@@ -1,0 +1,16 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /patients
+Disallow: /agenda
+Disallow: /consultations
+Disallow: /reports
+Disallow: /marketing
+Disallow: /team
+Disallow: /billing
+Disallow: /settings
+Disallow: /onboarding
+
+Sitemap: https://medsystem.app/sitemap.xml

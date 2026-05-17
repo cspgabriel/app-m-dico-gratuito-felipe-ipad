@@ -29,7 +29,10 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { generatePDF } from '../lib/pdf-service';
+import { downloadReceipt } from '../lib/receipt-service';
+import { waLink, reminderMessage } from '../lib/whatsapp';
 import { toast } from 'sonner';
+import { MessageCircle, Receipt } from 'lucide-react';
 
 export default function PatientDetails() {
   const { user, tenantId, userProfile } = useAuth();
@@ -219,11 +222,47 @@ export default function PatientDetails() {
                     >
                       <Calendar size={14} /> Agendar em Calendário
                     </Button>
-                    <Button 
-                      onClick={() => toast.success('E-mail SMS de lembrete enviado (Simulação)')}
+                    <Button
+                      onClick={() => {
+                        if (!patient.telefone) {
+                          toast.error('Paciente sem telefone cadastrado.');
+                          return;
+                        }
+                        const msg = reminderMessage(patient.nome, {
+                          clinicName: userProfile?.clinicName,
+                          doctorName: userProfile?.name,
+                          data: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                          local: 'Presencial',
+                        });
+                        window.open(waLink(patient.telefone, msg), '_blank');
+                      }}
+                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"
+                    >
+                      <MessageCircle size={14} /> WhatsApp Lembrete
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const numero = `${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+                        downloadReceipt({
+                          numero,
+                          data: new Date().toISOString(),
+                          valor: 0,
+                          servico: 'Consulta médica',
+                          prestador: {
+                            nome: userProfile?.name || 'Profissional',
+                            crm: userProfile?.crm,
+                            endereco: userProfile?.clinicAddress,
+                          },
+                          tomador: {
+                            nome: patient.nome,
+                            cpf: patient.cpf,
+                          },
+                        });
+                        toast.success('Recibo gerado! Ajuste o valor no PDF se necessário.');
+                      }}
                       variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 font-semibold"
                     >
-                      <Phone size={14} /> SMS Lembrete
+                      <Receipt size={14} /> Gerar Recibo
                     </Button>
                   </div>
                 </div>

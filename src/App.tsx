@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { FirebaseProvider, useAuth } from './components/FirebaseProvider';
 import { 
   Users, 
@@ -327,6 +328,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
 export default function App() {
   return (
+    <HelmetProvider>
     <FirebaseProvider>
       <Router>
         <Suspense fallback={<div className="flex items-center justify-center h-screen bg-[#F8F9FA] text-apple-blue font-bold">Carregando MedSystem...</div>}>
@@ -357,5 +359,6 @@ export default function App() {
         <PWAInstallPrompt />
       </Router>
     </FirebaseProvider>
+    </HelmetProvider>
   );
 }

@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
-import { 
-  ClipboardList, 
-  ShieldCheck, 
-  ChevronRight, 
-  Users, 
+import {
+  ClipboardList,
+  ShieldCheck,
+  ChevronRight,
+  Users,
   Lock,
   FileWarning,
   Clock,
   Activity,
   FileText,
+  FileCheck,
   Globe,
   Database,
   Star
@@ -23,6 +25,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen selection:bg-apple-blue/30 selection:text-apple-blue font-sans pb-20 lg:pb-0">
+      <Helmet>
+        <title>MedSystem — Prontuário, agenda e gestão para consultórios médicos</title>
+        <meta name="description" content="Sistema completo para consultórios e clínicas: prontuário eletrônico, agenda, faturamento TISS/TUSS e financeiro. Comece grátis, sem cartão de crédito." />
+        <link rel="canonical" href="https://medsystem.app/" />
+      </Helmet>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-white/20 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -64,14 +71,10 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             className="flex-1 text-center lg:text-left space-y-8"
           >
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 max-w-max mx-auto lg:mx-0 px-4 py-2 rounded-full bg-white/60 border border-gray-200/60 shadow-sm backdrop-blur-md mb-2">
-              <div className="flex -space-x-2">
-                <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=100&h=100&q=80" alt="Médica" className="w-6 h-6 rounded-full border border-white object-cover" />
-                <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=100&h=100&q=80" alt="Médico" className="w-6 h-6 rounded-full border border-white object-cover" />
-                <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1651008376811-b90baee60c1f?auto=format&fit=crop&w=100&h=100&q=80" alt="Médico" className="w-6 h-6 rounded-full border border-white object-cover" />
-              </div>
-              <span className="text-gray-600 text-[11px] font-bold uppercase tracking-widest sm:border-l sm:border-gray-200 sm:pl-3">
-                Utilizado por +12.932 clínicas
+            <div className="flex items-center justify-center lg:justify-start gap-2 max-w-max mx-auto lg:mx-0 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 shadow-sm mb-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span className="text-amber-900 text-[11px] font-bold uppercase tracking-widest">
+                Beta aberto • Vagas limitadas
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
@@ -89,7 +92,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="text-sm text-gray-500 font-medium">
-              Sem cartão de crédito • Grátis para residentes
+              Sem cartão de crédito • Configuração em 5 minutos
             </p>
           </motion.div>
 
@@ -394,7 +397,7 @@ export default function LandingPage() {
             {/* Plan 1 */}
             <div className="p-8 rounded-[32px] border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-shadow text-left">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Básico</h3>
-              <p className="text-gray-500 mb-6 h-12">Perfeito para estudantes e residentes que estão começando.</p>
+              <p className="text-gray-500 mb-6 h-12">Para profissionais começando o consultório próprio.</p>
               <div className="mb-8">
                 <span className="text-5xl font-black text-gray-900">R$ 0</span>
                 <span className="text-gray-500 font-medium">/mês</span>
@@ -454,54 +457,67 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 06.6 Depoimentos */}
+      {/* 06.6 Comparativo */}
       <section className="py-24 px-6 bg-gray-50 border-y border-gray-200">
-         <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl font-black tracking-tight text-center text-gray-900 mb-16">
-              O que dizem nossos colegas.
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative">
-                  <div className="text-blue-500 text-6xl font-serif absolute top-4 left-6 opacity-20">"</div>
-                  <p className="text-gray-700 font-medium leading-relaxed relative z-10 mb-6 mt-4">
-                    "Tinha uma pilha de papel na minha mesa e não sabia mais por onde organizar. Em uma semana usando o MedSystem, centralizei tudo. A funcionalidade de prescrever direto na plataforma mudou minha rotina."
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&q=80" alt="Dra. Juliana" className="w-12 h-12 rounded-full object-cover" />
-                    <div>
-                      <p className="font-bold text-gray-900">Dra. Juliana Costa</p>
-                      <p className="text-sm text-gray-500">Dermatologista, São Paulo</p>
-                    </div>
-                  </div>
-               </div>
-               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative">
-                  <div className="text-blue-500 text-6xl font-serif absolute top-4 left-6 opacity-20">"</div>
-                  <p className="text-gray-700 font-medium leading-relaxed relative z-10 mb-6 mt-4">
-                     "Administrar o repasse de 6 profissionais era meu pesadelo todo final de mês. Com o MedSystem, tiro o relatório de produtividade em três cliques. Simples e direto."
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&q=80" alt="Dr. Roberto" className="w-12 h-12 rounded-full object-cover" />
-                    <div>
-                      <p className="font-bold text-gray-900">Dr. Roberto Almeida</p>
-                      <p className="text-sm text-gray-500">Diretor Clínico, Rio de Janeiro</p>
-                    </div>
-                  </div>
-               </div>
-               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative">
-                  <div className="text-blue-500 text-6xl font-serif absolute top-4 left-6 opacity-20">"</div>
-                  <p className="text-gray-700 font-medium leading-relaxed relative z-10 mb-6 mt-4">
-                     "Eu busco um software que não me atrapalhe. A interface é tão minimalista que parece que estou usando algo nativo do meu computador. Não troco por nada."
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1537368910025-702800faa86b?w=150&h=150&fit=crop&q=80" alt="Dr. Marcelo" className="w-12 h-12 rounded-full object-cover" />
-                    <div>
-                      <p className="font-bold text-gray-900">Dr. Marcelo Mendes</p>
-                      <p className="text-sm text-gray-500">Cardiologista, Curitiba</p>
-                    </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-black tracking-tight text-center text-gray-900 mb-4">
+            Por que trocar pelo MedSystem.
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Comparação honesta com os sistemas mais usados pelos consultórios brasileiros.
+          </p>
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left p-4 font-bold text-gray-700">Recurso</th>
+                  <th className="p-4 font-bold text-apple-blue">MedSystem</th>
+                  <th className="p-4 font-bold text-gray-500">Outros</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {[
+                  ['Plano gratuito permanente', '✓ Até 50 pacientes', 'Trial 7–14 dias'],
+                  ['Onboarding sem ligação de vendedor', '✓ 5 minutos', 'Demo obrigatória'],
+                  ['Mensalidade do plano Profissional', 'R$ 149', 'R$ 199 a R$ 499'],
+                  ['Lembretes WhatsApp', '✓ Incluso', 'Add-on R$ 49+'],
+                  ['Recibo médico em PDF', '✓ Incluso', 'Add-on'],
+                  ['Faturamento TISS/TUSS', '✓ Incluso', 'Add-on'],
+                  ['LGPD compliant', '✓', '✓'],
+                ].map(([feat, ours, theirs]) => (
+                  <tr key={feat}>
+                    <td className="p-4 font-medium text-gray-800">{feat}</td>
+                    <td className="p-4 text-center font-bold text-emerald-600">{ours}</td>
+                    <td className="p-4 text-center text-gray-500">{theirs}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* 06.65 Trust badges */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-xs font-bold uppercase tracking-widest text-gray-500 mb-8">Segurança e Conformidade</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: ShieldCheck, label: 'LGPD', sub: 'Lei Geral de Proteção de Dados' },
+              { icon: Lock, label: 'Criptografia', sub: 'TLS 1.3 + em repouso' },
+              { icon: Database, label: 'Hospedagem BR', sub: 'Servidores em território nacional' },
+              { icon: FileCheck, label: 'Backup diário', sub: 'Histórico de 30 dias' },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="flex flex-col items-center text-center p-6 rounded-2xl border border-gray-100 bg-gray-50/50">
+                <div className="w-12 h-12 rounded-xl bg-apple-blue/10 text-apple-blue flex items-center justify-center mb-3">
+                  <Icon size={24} />
+                </div>
+                <p className="font-bold text-gray-900">{label}</p>
+                <p className="text-xs text-gray-500 mt-1">{sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* 06.7 FAQ */}
@@ -512,8 +528,8 @@ export default function LandingPage() {
           </h2>
           <div className="space-y-6">
             <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-colors bg-gray-50/50">
-              <h4 className="text-xl font-bold text-gray-900 mb-2">O MedSystem é realmente gratuito para residentes?</h4>
-              <p className="text-gray-600 font-medium">Sim! Acreditamos no fomento à educação médica. O plano Básico é 100% gratuito para residentes ou recém-formados com menos de 1 ano de CRM, limitado a 50 pacientes simultâneos.</p>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Existe um plano gratuito de verdade?</h4>
+              <p className="text-gray-600 font-medium">Sim. O plano Básico é totalmente gratuito, sem prazo de expiração e sem pedir cartão de crédito, limitado a 50 pacientes cadastrados. Pra consultórios iniciantes já é suficiente.</p>
             </div>
             <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-colors bg-gray-50/50">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Preciso instalar algo no meu computador?</h4>
@@ -548,7 +564,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <p className="mt-8 text-sm text-gray-500 font-bold uppercase tracking-widest">
-              Sem cartão de crédito necessário • Grátis para residentes
+              Sem cartão de crédito • LGPD • Hospedagem no Brasil
             </p>
           </div>
         </div>

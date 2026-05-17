@@ -585,6 +585,7 @@ function NewAppointmentModal({
   const [duracao, setDuracao] = useState(30);
   const [tipo, setTipo] = useState('Primeira Consulta');
   const [local, setLocal] = useState<'Presencial' | 'Telemedicina'>('Presencial');
+  const [telemedicineUrl, setTelemedicineUrl] = useState('');
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -609,6 +610,7 @@ function NewAppointmentModal({
         duracao,
         tipo,
         local,
+        telemedicineUrl: local === 'Telemedicina' ? telemedicineUrl.trim() : '',
         status: 'confirmed',
         userId: tenantId,
         createdAt: new Date().toISOString(),
@@ -743,6 +745,32 @@ function NewAppointmentModal({
               className="rounded-xl h-11"
             />
           </div>
+
+          {local === 'Telemedicina' && (
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                Link da consulta (Teams / Meet / Zoom)
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={telemedicineUrl}
+                  onChange={(e) => setTelemedicineUrl(e.target.value)}
+                  placeholder="Cole o link aqui"
+                  className="rounded-xl h-11 flex-1"
+                />
+                <a
+                  href="https://teams.microsoft.com/l/meeting/new?subject=Consulta%20m%C3%A9dica"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 h-11 rounded-xl bg-[#5059C9] text-white text-xs font-bold flex items-center gap-1 hover:bg-[#3F47A8]"
+                  title="Abrir Teams e gerar link"
+                >
+                  Teams ↗
+                </a>
+              </div>
+              <p className="text-[10px] text-gray-500 mt-1">Clique em "Teams ↗" pra criar a reunião e cole o link gerado aqui.</p>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex gap-2 justify-end">

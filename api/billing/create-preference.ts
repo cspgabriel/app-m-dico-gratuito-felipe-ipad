@@ -33,9 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         external_reference: decoded.uid,
         metadata: { userId: decoded.uid, plan },
         back_urls: {
-          success: `${appUrl}/#/billing/success?plan=${plan}`,
-          failure: `${appUrl}/#/billing/failure?plan=${plan}`,
-          pending: `${appUrl}/#/billing/pending?plan=${plan}`,
+          success: `${appUrl}/billing/success?plan=${plan}`,
+          failure: `${appUrl}/billing/failure?plan=${plan}`,
+          pending: `${appUrl}/billing/pending?plan=${plan}`,
         },
         auto_return: 'approved',
         statement_descriptor: 'MEDSYSTEM',

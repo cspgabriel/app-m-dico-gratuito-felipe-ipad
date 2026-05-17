@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         reason: `MedSystem — Plano ${planDef.name}`,
         external_reference: decoded.uid,
         payer_email: email,
-        back_url: `${appUrl}/#/billing/success?plan=${plan}`,
+        back_url: `${appUrl}/billing/success?plan=${plan}`,
         status: 'pending',
         auto_recurring: {
           frequency: 1,
