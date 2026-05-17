@@ -67,7 +67,14 @@ service cloud.firestore {
         allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
     }
-    
+
+    // PAYMENTS (Mercado Pago)
+    match /payments/{paymentId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
     // AGENDAMENTOS
     match /agendamentos/{agendaId} {
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
@@ -80,6 +87,9 @@ service cloud.firestore {
       allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
     match /{path=**}/anamneses/{id} {
+      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /{path=**}/exames/{id} {
       allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
