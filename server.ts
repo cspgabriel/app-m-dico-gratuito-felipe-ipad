@@ -5,10 +5,15 @@ import { GoogleGenAI } from "@google/genai";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
+import MercadoPagoConfig, { Preference } from "mercadopago";
 
 dotenv.config();
 
 const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+
+const mpClient = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN || "",
+});
 
 async function startServer() {
   const app = express();
@@ -93,6 +98,40 @@ async function startServer() {
     } catch (error) {
       console.error("Gemini Chat Error:", error);
       res.status(500).json({ error: "Failed to process chat" });
+    }
+  });
+
+  // Mercado Pago – criar preferência de pagamento
+  app.post("/api/payments/create-preference", async (req, res) => {
+    try {
+      const { planName, amount, email } = req.body;
+
+      const preference = new Preference(mpClient);
+      const result = await preference.create({
+        body: {
+          items: [
+            {
+              id: "clinica-pro-mensal",
+              title: planName || "Clínica Pro – Mensal",
+              quantity: 1,
+              unit_price: amount || 149.0,
+              currency_id: "BRL",
+            },
+          ],
+          payer: email ? { email } : undefined,
+          back_urls: {
+            success: `${process.env.APP_URL || "http://localhost:3000"}/billing?status=success`,
+            failure: `${process.env.APP_URL || "http://localhost:3000"}/billing?status=failure`,
+            pending: `${process.env.APP_URL || "http://localhost:3000"}/billing?status=pending`,
+          },
+          auto_return: "approved",
+        },
+      });
+
+      res.json({ id: result.id, init_point: result.init_point });
+    } catch (error) {
+      console.error("MercadoPago Error:", error);
+      res.status(500).json({ error: "Failed to create payment preference" });
     }
   });
 
