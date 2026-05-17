@@ -44,7 +44,7 @@ const mpClient = mpAccessToken ? new MercadoPagoConfig({ accessToken: mpAccessTo
 const PLAN_PRICES: Record<string, { name: string; price: number }> = {
   basico: { name: "Básico", price: 0 },
   profissional: { name: "Profissional", price: 149 },
-  multi: { name: "Multi-Clínicas", price: 349 },
+  vitalicio: { name: "Vitalício", price: 2497 },
 };
 
 async function verifyAuth(req: express.Request): Promise<admin.auth.DecodedIdToken | null> {
@@ -126,8 +126,11 @@ async function startServer() {
         const userId = payment.external_reference;
         if (userId) {
           const status = payment.status === "approved" ? "active" : payment.status === "pending" ? "pending" : "failed";
+          const currentSub = await firestore.collection("subscriptions").doc(userId).get();
+          const selectedPlan = currentSub.data()?.plan || payment.metadata?.plan || "basico";
           await firestore.collection("subscriptions").doc(userId).set({
             userId,
+            plan: selectedPlan,
             status,
             lastPaymentDate: payment.date_approved || payment.date_created,
             lastPaymentId: payment.id,
@@ -135,7 +138,7 @@ async function startServer() {
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           }, { merge: true });
           if (status === "active") {
-            await firestore.collection("users").doc(userId).set({ subscriptionStatus: "active" }, { merge: true });
+            await firestore.collection("users").doc(userId).set({ plan: selectedPlan, subscriptionStatus: "active" }, { merge: true });
           }
         }
       }
@@ -234,6 +237,7 @@ async function startServer() {
       const { plan, payerEmail } = req.body as { plan: string; payerEmail?: string };
       const planDef = PLAN_PRICES[plan];
       if (!planDef || planDef.price <= 0) return res.status(400).json({ error: "Plano inválido." });
+      if (plan === "vitalicio") return res.status(400).json({ error: "Plano Vitalício usa pagamento único." });
 
       const email = payerEmail || decoded.email;
       if (!email) return res.status(400).json({ error: "E-mail do pagador é obrigatório." });
@@ -342,7 +346,7 @@ function mapPreapprovalStatus(s?: string): string {
 
 function inferPlanFromReason(reason: string): string {
   const r = reason.toLowerCase();
-  if (r.includes("multi")) return "multi";
+  if (r.includes("vital")) return "vitalicio";
   if (r.includes("profissional")) return "profissional";
   return "basico";
 }

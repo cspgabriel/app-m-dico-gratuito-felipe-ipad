@@ -61,9 +61,19 @@ export default function Dashboard() {
     return d >= monthStart && d < monthEnd;
   };
 
+  const finalAppointmentStatuses = new Set(['completed', 'cancelled', 'rescheduled', 'no_show']);
+  const activeAppointment = (a: any) => !finalAppointmentStatuses.has(a.status);
+  const appointmentEnded = (a: any) => {
+    if (!a.data) return false;
+    const start = new Date(a.data);
+    const duration = Number(a.duracao || 30);
+    return new Date(start.getTime() + duration * 60_000) < new Date();
+  };
+
   const realizadasMes = consultas.filter(c => inMonth(c.data)).length;
-  const agendadasMes = agendamentos.filter(a => inMonth(a.data) && a.status !== 'cancelled').length;
+  const agendadasMes = agendamentos.filter(a => inMonth(a.data) && activeAppointment(a)).length;
   const desmarcadasMes = agendamentos.filter(a => inMonth(a.data) && a.status === 'cancelled').length;
+  const pendentesVencidas = agendamentos.filter(a => activeAppointment(a) && appointmentEnded(a)).length;
   const totalPacientes = allPatients.length;
 
   const patientName = (id: string) => allPatients.find(p => p.id === id)?.nome || 'Paciente';
@@ -71,7 +81,7 @@ export default function Dashboard() {
   const now = new Date();
   const upcoming = [
     ...agendamentos
-      .filter(a => a.data && new Date(a.data) >= new Date(now.toDateString()) && a.status !== 'cancelled')
+      .filter(a => a.data && new Date(a.data) >= new Date(now.toDateString()) && activeAppointment(a))
       .map(a => ({
         id: a.id,
         pacienteId: a.pacienteId,
@@ -119,6 +129,14 @@ export default function Dashboard() {
                </span>
             )}
           </div>
+          {pendentesVencidas > 0 && (
+            <button
+              onClick={() => navigate('/agenda')}
+              className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm font-semibold text-amber-900 hover:bg-amber-100 transition"
+            >
+              {pendentesVencidas} consulta{pendentesVencidas === 1 ? '' : 's'} com horário vencido aguardando status.
+            </button>
+          )}
           <p className="hidden xl:block text-base xl:text-lg text-gray-600 font-medium">Aqui está o resumo da sua clínica hoje.</p>
         </div>
         <div className="grid grid-cols-3 xl:flex xl:flex-row gap-2 relative z-10 w-full xl:w-auto">
@@ -221,9 +239,9 @@ export default function Dashboard() {
                  title="Faturamento TISS/TUSS"
                  description="Gere guias TISS/TUSS automaticamente para convênios."
                  icon={FileText}
-                 isLocked={plan === 'basico'}
+                 isLocked={false}
                  color="emerald"
-                 onClick={() => navigate('/billing')}
+                 onClick={() => navigate('/guides')}
               />
               <PremiumFeatureCard
                  title="Controle Financeiro"

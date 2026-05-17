@@ -1,19 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Receipt, Search, Download, Calendar, TrendingUp, User } from 'lucide-react';
+import { Receipt, Search, Download, Calendar, TrendingUp, User, Plus, Ban } from 'lucide-react';
 import { downloadReceipt, type ReceiptData } from '../lib/receipt-service';
 import { Link } from 'react-router-dom';
+import ReceiptDialog from '../components/ReceiptDialog';
+import { Paciente } from '../types';
+import { toast } from 'sonner';
 
 interface ReciboDoc extends ReceiptData {
   id: string;
   pacienteId?: string;
   pacienteNome?: string;
   createdAt: string;
+  status?: 'issued' | 'cancelled';
+  cancelledAt?: string;
 }
 
 const fmtBRL = (v: number) =>
@@ -22,8 +27,11 @@ const fmtBRL = (v: number) =>
 export default function ReceiptsPage() {
   const { tenantId } = useAuth();
   const [recibos, setRecibos] = useState<ReciboDoc[]>([]);
+  const [patients, setPatients] = useState<Paciente[]>([]);
   const [search, setSearch] = useState('');
   const [mes, setMes] = useState(() => new Date().toISOString().slice(0, 7));
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [selectedPatientId, setSelectedPatientId] = useState('');
 
   useEffect(() => {
     if (!tenantId) return;
@@ -35,6 +43,17 @@ export default function ReceiptsPage() {
     });
     return unsub;
   }, [tenantId]);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    const q = query(collection(db, 'pacientes'), where('userId', '==', tenantId));
+    return onSnapshot(q, (snap) => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Paciente));
+      data.sort((a, b) => a.nome.localeCompare(b.nome));
+      setPatients(data);
+      if (!selectedPatientId && data[0]) setSelectedPatientId(data[0].id);
+    });
+  }, [tenantId, selectedPatientId]);
 
   const filtered = useMemo(() => {
     return recibos.filter(r => {
@@ -48,13 +67,29 @@ export default function ReceiptsPage() {
     });
   }, [recibos, search, mes]);
 
-  const totalMes = filtered.reduce((sum, r) => sum + (r.valor || 0), 0);
+  const selectedPatient = patients.find(p => p.id === selectedPatientId);
+  const validReceipts = filtered.filter(r => r.status !== 'cancelled');
+  const totalMes = validReceipts.reduce((sum, r) => sum + (r.valor || 0), 0);
   const totalAno = useMemo(() => {
     const year = mes.slice(0, 4);
     return recibos
-      .filter(r => r.data.startsWith(year))
+      .filter(r => r.data.startsWith(year) && r.status !== 'cancelled')
       .reduce((sum, r) => sum + (r.valor || 0), 0);
   }, [recibos, mes]);
+
+  const cancelReceipt = async (r: ReciboDoc) => {
+    if (!confirm(`Cancelar o recibo Nº ${r.numero}? Ele continuará no histórico para auditoria.`)) return;
+    try {
+      await updateDoc(doc(db, 'recibos', r.id), {
+        status: 'cancelled',
+        cancelledAt: new Date().toISOString(),
+      });
+      toast.success('Recibo cancelado.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao cancelar recibo.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -63,12 +98,32 @@ export default function ReceiptsPage() {
           <h2 className="text-3xl font-bold tracking-tight">Recibos</h2>
           <p className="text-apple-gray-dark">Histórico de recibos emitidos e carnê para IR</p>
         </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <select
+            value={selectedPatientId}
+            onChange={(e) => setSelectedPatientId(e.target.value)}
+            className="h-11 rounded-xl border border-gray-200 px-3 bg-white text-sm font-semibold min-w-52"
+          >
+            {patients.length === 0 ? (
+              <option value="">Cadastre um paciente</option>
+            ) : patients.map(p => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+          <Button
+            onClick={() => setReceiptOpen(true)}
+            disabled={!selectedPatient}
+            className="h-11 rounded-xl bg-apple-blue hover:bg-blue-600 text-white font-bold gap-2"
+          >
+            <Plus size={18} /> Novo recibo
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard icon={Calendar} label={`Total em ${mes.slice(5, 7)}/${mes.slice(0, 4)}`} value={fmtBRL(totalMes)} color="blue" />
         <StatCard icon={TrendingUp} label={`Acumulado em ${mes.slice(0, 4)}`} value={fmtBRL(totalAno)} color="emerald" />
-        <StatCard icon={Receipt} label="Recibos emitidos" value={filtered.length.toString()} color="indigo" />
+        <StatCard icon={Receipt} label="Recibos válidos" value={validReceipts.length.toString()} color="indigo" />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -94,13 +149,13 @@ export default function ReceiptsPage() {
           <CardContent className="p-12 text-center">
             <Receipt className="mx-auto text-gray-300 mb-4" size={48} />
             <p className="text-lg font-bold text-gray-700">Nenhum recibo neste período.</p>
-            <p className="text-sm text-gray-500 mt-1">Emita recibos pela tela do paciente.</p>
+            <p className="text-sm text-gray-500 mt-1">Escolha um paciente acima e emita um novo recibo.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-2">
           {filtered.map(r => (
-            <Card key={r.id} className="rounded-2xl border-gray-100 hover:shadow-md transition-shadow">
+            <Card key={r.id} className={`rounded-2xl transition-shadow ${r.status === 'cancelled' ? 'border-red-100 bg-red-50/30 opacity-80' : 'border-gray-100 hover:shadow-md'}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -113,6 +168,11 @@ export default function ReceiptsPage() {
                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">
                           Nº {r.numero}
                         </span>
+                        {r.status === 'cancelled' && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-red-100 text-red-700">
+                            Cancelado
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-gray-500 truncate">
                         {r.servico} • {new Date(r.data).toLocaleDateString('pt-BR')}
@@ -130,6 +190,17 @@ export default function ReceiptsPage() {
                     >
                       <Download size={16} className="text-apple-blue" />
                     </Button>
+                    {r.status !== 'cancelled' && (
+                      <Button
+                        onClick={() => cancelReceipt(r)}
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-lg hover:bg-red-50"
+                        title="Cancelar recibo"
+                      >
+                        <Ban size={16} className="text-red-500" />
+                      </Button>
+                    )}
                     {r.pacienteId && (
                       <Link to={`/patients/${r.pacienteId}`}>
                         <Button variant="ghost" size="sm" className="rounded-lg hover:bg-gray-100" title="Ver paciente">
@@ -143,6 +214,19 @@ export default function ReceiptsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {selectedPatient && (
+        <ReceiptDialog
+          open={receiptOpen}
+          onClose={() => setReceiptOpen(false)}
+          patient={{
+            id: selectedPatient.id,
+            nome: selectedPatient.nome,
+            cpf: selectedPatient.cpf,
+            endereco: selectedPatient.endereco,
+          }}
+        />
       )}
     </div>
   );

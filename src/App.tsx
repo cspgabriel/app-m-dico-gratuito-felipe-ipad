@@ -12,6 +12,8 @@ import {
   ChevronRight,
   ClipboardList,
   BarChart,
+  FileText,
+  Megaphone,
   Menu,
   X,
   UsersRound,
@@ -44,6 +46,8 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const TeamManagement = lazy(() => import('./pages/TeamManagement'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const ReceiptsPage = lazy(() => import('./pages/ReceiptsPage'));
+const GuidesPage = lazy(() => import('./pages/GuidesPage'));
+const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
 
@@ -126,6 +130,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, userProfile, loading } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const currentPlan = userProfile?.plan || 'basico';
 
   if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   if (!user) return <Navigate to="/login" />;
@@ -192,12 +197,28 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           onClick={() => setMobileMenuOpen(false)}
         />
         <SidebarItem
+          to="/guides"
+          icon={FileText}
+          label="Guias TISS/TUSS"
+          active={location.pathname === '/guides'}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
           to="/team" 
           icon={UsersRound} 
           label="Gestão de Equipe" 
           active={location.pathname === '/team'}
           onClick={() => setMobileMenuOpen(false)}
         />
+        {currentPlan === 'vitalicio' && (
+          <SidebarItem
+            to="/marketing"
+            icon={Megaphone}
+            label="Marketing"
+            active={location.pathname === '/marketing'}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
         <SidebarItem
           to="/receipts"
           icon={Receipt}
@@ -341,7 +362,9 @@ export default function App() {
             <Route path="/consultation/:patientId" element={<MainLayout><ConsultationPage /></MainLayout>} />
             <Route path="/consultation/:patientId/:consultaId" element={<MainLayout><ConsultationPage /></MainLayout>} />
             <Route path="/reports" element={<MainLayout><ReportsPage /></MainLayout>} />
+            <Route path="/guides" element={<MainLayout><GuidesPage /></MainLayout>} />
             <Route path="/team" element={<MainLayout><TeamManagement /></MainLayout>} />
+            <Route path="/marketing" element={<MainLayout><MarketingInsights /></MainLayout>} />
             <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
             <Route path="/receipts" element={<MainLayout><ReceiptsPage /></MainLayout>} />
             <Route path="/billing/plans" element={<MainLayout><BillingPage /></MainLayout>} />

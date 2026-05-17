@@ -18,6 +18,7 @@ export interface ReceiptData {
     cpf?: string;
     endereco?: string;
   };
+  formaPagamento?: string;
   observacoes?: string;
   retencaoINSS?: number; // percentage 0-100
   retencaoIR?: number;   // percentage 0-100
@@ -144,6 +145,13 @@ export function generateReceiptPDF(r: ReceiptData): jsPDF {
     doc.setTextColor(80);
     doc.text(doc.splitTextToSize(`Obs.: ${r.observacoes}`, 170), M, y);
     y += 8;
+  }
+
+  if (r.formaPagamento) {
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    doc.text(`Forma de pagamento: ${r.formaPagamento}`, M, y);
+    y += 7;
   }
 
   doc.setTextColor(40);

@@ -11,6 +11,7 @@ export interface Entitlements {
   maxProfissionais: number;
   canUseTiss: boolean;
   canMultiClinica: boolean;
+  canUseMarketingAutomation: boolean;
   canManageBilling: boolean;
 }
 
@@ -36,6 +37,7 @@ export function usePlan(): Entitlements {
     maxProfissionais: plan.limits.profissionais,
     canUseTiss: plan.limits.tissTuss && isActive,
     canMultiClinica: plan.limits.multiClinica && isActive,
+    canUseMarketingAutomation: plan.limits.whatsappEmailMarketing && isActive,
     canManageBilling: role === 'admin',
   };
 }

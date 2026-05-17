@@ -10,12 +10,13 @@ export interface UserProfile {
   clinicName?: string;
   clinicPhone?: string;
   clinicAddress?: string;
+  clinicCpfCnpj?: string;
   logoUrl?: string;
   primaryColor?: string;
   role?: string; /* 'admin' | 'staff' */
   tenantId?: string;
   onboardingComplete?: boolean;
-  plan?: 'basico' | 'profissional' | 'multi';
+  plan?: 'basico' | 'profissional' | 'vitalicio';
   subscriptionStatus?: 'free' | 'pending' | 'active' | 'authorized' | 'paused' | 'cancelled' | 'failed';
   calendarios?: string[]; // ex: ['Consultório', 'Telemedicina', 'Plantão']
 }

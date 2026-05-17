@@ -3,13 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { useAuth } from '../components/FirebaseProvider';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Target, TrendingUp, AlertCircle, CalendarClock, Mail } from 'lucide-react';
+import { Target, TrendingUp, AlertCircle, CalendarClock, Mail, Lock } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Paciente } from '../types';
 import { toast } from 'sonner';
+import { usePlan } from '../lib/entitlements';
 
 export default function MarketingInsights() {
   const { tenantId } = useAuth();
+  const { canUseMarketingAutomation } = usePlan();
   const [loading, setLoading] = useState(false);
   const [inactivePatients, setInactivePatients] = useState<Paciente[]>([]);
 
@@ -34,25 +36,54 @@ export default function MarketingInsights() {
     fetchInsights();
   }, [tenantId]);
 
-  const handleSendReminders = async () => {
+  const handleExportCampaign = async () => {
     setLoading(true);
     try {
-      // Simulate sending marketing emails
       await new Promise(r => setTimeout(r, 1500));
-      toast.success(`E-mails de retenção enviados com sucesso para ${inactivePatients.length} pacientes!`);
+      const header = ['Nome', 'Telefone', 'Mensagem sugerida'];
+      const csv = [
+        header.join(';'),
+        ...inactivePatients.map((p) => [
+          p.nome,
+          p.telefone || '',
+          `Olá, ${p.nome}. Sentimos sua falta na clínica. Podemos agendar seu retorno?`,
+        ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')),
+      ].join('\n');
+      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `campanha-reativacao-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Campanha exportada com ${inactivePatients.length} pacientes.`);
     } catch (e) {
-      toast.error('Erro ao enviar e-mails');
+      toast.error('Erro ao exportar campanha');
     } finally {
       setLoading(false);
     }
   };
 
+  if (!canUseMarketingAutomation) {
+    return (
+      <Card className="apple-card max-w-2xl mx-auto">
+        <CardContent className="p-8 text-center space-y-3">
+          <Lock className="mx-auto text-apple-blue" size={40} />
+          <h2 className="text-2xl font-bold">Marketing integrado apenas no Vitalício</h2>
+          <p className="text-gray-600">
+            Planos Básico e Profissional não incluem WhatsApp, e-mail ou automações de marketing.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Marketing & Insights</h2>
-          <p className="text-apple-gray-dark">Inteligência de dados para retenção de pacientes</p>
+          <h2 className="text-3xl font-bold tracking-tight">Marketing Vitalício</h2>
+          <p className="text-apple-gray-dark">WhatsApp e e-mail marketing para retenção de pacientes</p>
         </div>
       </div>
 
@@ -117,16 +148,16 @@ export default function MarketingInsights() {
                 Você possui <strong>{inactivePatients.length} pacientes</strong> que não retornam há mais de 6 meses.
               </p>
               <p className="text-xs text-gray-500">
-                Lembre-os da importância do check-up preventivo. O envio programado de e-mails de marketing ajuda na fidelização.
+                Gere uma lista de campanha para reativação por WhatsApp e e-mail marketing.
               </p>
             </div>
             <Button 
               className="bg-orange-500 hover:bg-orange-600 font-bold gap-2 rounded-xl shrink-0"
-              onClick={handleSendReminders}
+              onClick={handleExportCampaign}
               disabled={loading || inactivePatients.length === 0}
             >
               <Mail size={18} />
-              {loading ? 'Disparando Campanha...' : 'Disparar E-mails de Retenção'}
+              {loading ? 'Preparando Campanha...' : 'Exportar Campanha de Retenção'}
             </Button>
           </div>
         </CardContent>

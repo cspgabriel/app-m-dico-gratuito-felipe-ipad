@@ -15,16 +15,16 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg'],
+        includeAssets: ['icon.svg', 'pwa-192.png', 'pwa-512.png'],
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
           navigateFallback: `${basePath}index.html`,
           cleanupOutdatedCaches: true,
         },
         manifest: {
-          name: 'Clinicafy',
+          name: 'Clinicafy — Gestão médica para clínicas',
           short_name: 'Clinicafy',
-          description: 'Sistema inteligente para clínicas que querem crescer',
+          description: 'Prontuário, agenda, recibos, guias TISS/TUSS e gestão para consultórios e clínicas médicas.',
           theme_color: '#1677FF',
           background_color: '#ffffff',
           display: 'standalone',
@@ -33,18 +33,20 @@ export default defineConfig(({mode}) => {
           start_url: basePath,
           icons: [
             {
-              src: 'icon.svg',
+              src: 'pwa-192.png',
               sizes: '192x192',
-              type: 'image/svg+xml',
+              type: 'image/png',
               purpose: 'any',
             },
             {
-              src: 'icon.svg',
+              src: 'pwa-512.png',
               sizes: '512x512',
-              type: 'image/svg+xml',
+              type: 'image/png',
               purpose: 'any maskable',
             },
           ],
+          categories: ['medical', 'health', 'productivity', 'business'],
+          lang: 'pt-BR',
         },
       })
     ],

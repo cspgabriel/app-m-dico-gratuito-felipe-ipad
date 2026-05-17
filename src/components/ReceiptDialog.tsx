@@ -29,6 +29,9 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
   const [servico, setServico] = useState('Consulta médica');
   const [valor, setValor] = useState('');
   const [observacoes, setObservacoes] = useState('');
+  const [tomadorCpf, setTomadorCpf] = useState(patient.cpf || '');
+  const [tomadorEndereco, setTomadorEndereco] = useState(patient.endereco || '');
+  const [formaPagamento, setFormaPagamento] = useState('Pix');
   const [retencaoINSS, setRetencaoINSS] = useState('');
   const [retencaoIR, setRetencaoIR] = useState('');
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
@@ -39,11 +42,14 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
       setServico('Consulta médica');
       setValor('');
       setObservacoes('');
+      setTomadorCpf(patient.cpf || '');
+      setTomadorEndereco(patient.endereco || '');
+      setFormaPagamento('Pix');
       setRetencaoINSS('');
       setRetencaoIR('');
       setData(new Date().toISOString().slice(0, 10));
     }
-  }, [open]);
+  }, [open, patient.cpf, patient.endereco]);
 
   if (!open) return null;
 
@@ -105,13 +111,14 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
           crm: userProfile?.crm || '',
           endereco: userProfile?.clinicAddress || '',
           telefone: userProfile?.clinicPhone || '',
-          cpfCnpj: '',
+          cpfCnpj: userProfile?.clinicCpfCnpj || '',
         },
         tomador: {
           nome: patient.nome,
-          cpf: patient.cpf || '',
-          endereco: '',
+          cpf: tomadorCpf.trim(),
+          endereco: tomadorEndereco.trim(),
         },
+        formaPagamento,
         observacoes: observacoes.trim() || undefined,
         retencaoINSS: inss > 0 ? inss : undefined,
         retencaoIR: ir > 0 ? ir : undefined,
@@ -121,6 +128,8 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
         ...receiptData,
         pacienteId: patient.id,
         pacienteNome: patient.nome,
+        status: 'issued',
+        formaPagamento,
         userId: tenantId,
         createdAt: new Date().toISOString(),
       });
@@ -203,6 +212,50 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
                 className="h-11 rounded-xl"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">
+                CPF do pagador/paciente
+              </label>
+              <Input
+                value={tomadorCpf}
+                onChange={(e) => setTomadorCpf(e.target.value)}
+                placeholder="000.000.000-00"
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">
+                Forma de pagamento
+              </label>
+              <select
+                value={formaPagamento}
+                onChange={(e) => setFormaPagamento(e.target.value)}
+                className="w-full h-11 rounded-xl border border-gray-200 px-3 bg-white"
+              >
+                <option>Pix</option>
+                <option>Dinheiro</option>
+                <option>Cartão de crédito</option>
+                <option>Cartão de débito</option>
+                <option>Transferência</option>
+                <option>Boleto</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">
+              Endereço do pagador/paciente
+            </label>
+            <Input
+              value={tomadorEndereco}
+              onChange={(e) => setTomadorEndereco(e.target.value)}
+              placeholder="Rua, número, cidade - UF"
+              className="h-11 rounded-xl"
+            />
           </div>
 
           <details className="rounded-xl border border-gray-200 overflow-hidden">

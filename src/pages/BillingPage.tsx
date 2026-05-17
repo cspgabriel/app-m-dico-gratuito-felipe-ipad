@@ -95,7 +95,11 @@ export default function BillingPage() {
               </div>
               <h3 className="text-4xl font-black mt-1">{currentPlan.name}</h3>
               <p className="text-sm opacity-90 mt-2">
-                {currentPlan.free ? 'Grátis para sempre' : `${formatCurrency(currentPlan.price)} / mês • Ciclo mensal`}
+                {currentPlan.free
+                  ? 'Grátis para sempre'
+                  : currentPlan.id === 'vitalicio'
+                    ? `${formatCurrency(currentPlan.price)} • pagamento único`
+                    : `${formatCurrency(currentPlan.price)} / mês • Ciclo mensal`}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-white/20">
@@ -236,7 +240,7 @@ function PlansGrid({ currentPlanId, status }: { currentPlanId: PlanId; status: s
                 </div>
                 <div className="mb-4">
                   <span className="text-3xl font-black">{p.free ? 'Grátis' : formatCurrency(p.price)}</span>
-                  {!p.free && <span className="text-sm text-gray-500">/mês</span>}
+                  {!p.free && <span className="text-sm text-gray-500">{p.id === 'vitalicio' ? ' único' : '/mês'}</span>}
                 </div>
                 <ul className="space-y-2 mb-5 flex-1">
                   {p.features.map((f) => (
@@ -254,7 +258,7 @@ function PlansGrid({ currentPlanId, status }: { currentPlanId: PlanId; status: s
                 ) : (
                   <Link to={`/billing/checkout?plan=${p.id}`}>
                     <Button className="w-full rounded-xl bg-apple-blue hover:bg-blue-600 text-white">
-                      Assinar
+                      {p.id === 'vitalicio' ? 'Comprar Vitalício' : 'Assinar'}
                     </Button>
                   </Link>
                 )}

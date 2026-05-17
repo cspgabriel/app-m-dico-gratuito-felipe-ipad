@@ -14,6 +14,7 @@ export default function Settings() {
   const { user, userProfile, refreshProfile } = useAuth();
   const [logoUrl, setLogoUrl] = useState(userProfile?.logoUrl || '');
   const [clinicName, setClinicName] = useState(userProfile?.clinicName || '');
+  const [clinicCpfCnpj, setClinicCpfCnpj] = useState(userProfile?.clinicCpfCnpj || '');
   const [calendarios, setCalendarios] = useState<string[]>(userProfile?.calendarios?.length ? userProfile.calendarios : DEFAULT_CALENDARIOS);
   const [newCalName, setNewCalName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -62,6 +63,7 @@ export default function Settings() {
     try {
       await setDoc(doc(db, 'users', user.uid), {
         clinicName,
+        clinicCpfCnpj,
         logoUrl,
         tenantId: userProfile?.tenantId || user.uid // Ensure tenantId is maintained
       }, { merge: true });
@@ -93,6 +95,15 @@ export default function Settings() {
                 value={clinicName} 
                 onChange={(e) => setClinicName(e.target.value)}
                 className="w-full text-sm p-2 rounded-xl border-gray-200 border outline-none focus:ring-1 focus:ring-apple-blue font-bold" 
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-apple-gray-dark uppercase mb-1 block">CPF/CNPJ para recibos</label>
+              <input
+                value={clinicCpfCnpj}
+                onChange={(e) => setClinicCpfCnpj(e.target.value)}
+                placeholder="CPF ou CNPJ do prestador"
+                className="w-full text-sm p-2 rounded-xl border-gray-200 border outline-none focus:ring-1 focus:ring-apple-blue"
               />
             </div>
             <div>
@@ -217,32 +228,34 @@ export default function Settings() {
                 <ul className="text-sm space-y-2 mb-6">
                   <li>✅ 1 Profissional</li>
                   <li>✅ 50 Pacientes</li>
-                  <li>❌ Relatórios</li>
+                  <li>✅ Guias TISS/TUSS</li>
+                  <li>❌ WhatsApp/e-mail marketing</li>
                 </ul>
                 <Button variant="outline" className="w-full rounded-xl" disabled>Plano Atual</Button>
               </div>
 
               <div className="p-6 border-2 border-apple-blue rounded-2xl bg-white shadow-xl relative">
                 <div className="absolute top-0 right-1/2 translate-x-1/2 -mt-3 bg-apple-blue text-white text-[10px] uppercase font-bold py-1 px-3 rounded-full">Recomendado</div>
-                <h3 className="text-apple-blue font-bold mb-1">Clínica Pro</h3>
+                <h3 className="text-apple-blue font-bold mb-1">Profissional</h3>
                 <p className="text-3xl font-black mb-4">R$ 149<span className="text-sm font-normal text-gray-500">/mês</span></p>
                 <ul className="text-sm space-y-2 mb-6">
-                  <li>✅ Até 5 Profissionais</li>
+                  <li>✅ 1 Profissional</li>
                   <li>✅ Pacientes Ilimitados</li>
-                  <li>✅ Relatórios Inteligentes</li>
+                  <li>✅ PDFs, recibos e relatórios</li>
+                  <li>❌ WhatsApp/e-mail marketing</li>
                 </ul>
                 <Button className="w-full rounded-xl bg-apple-blue hover:bg-blue-600 font-bold">Fazer Upgrade</Button>
               </div>
 
               <div className="p-6 border rounded-2xl bg-gray-50">
-                <h3 className="text-apple-gray-dark font-bold mb-1">Corporate</h3>
-                <p className="text-3xl font-black mb-4">R$ 399<span className="text-sm font-normal text-gray-500">/mês</span></p>
+                <h3 className="text-apple-gray-dark font-bold mb-1">Vitalício</h3>
+                <p className="text-3xl font-black mb-4">R$ 2.497<span className="text-sm font-normal text-gray-500"> único</span></p>
                 <ul className="text-sm space-y-2 mb-6">
-                  <li>✅ Profissionais Ilimitados</li>
-                  <li>✅ Filiais e Unidades</li>
-                  <li>✅ API de Integração</li>
+                  <li>✅ Até 10 profissionais</li>
+                  <li>✅ WhatsApp integrado</li>
+                  <li>✅ E-mail marketing integrado</li>
                 </ul>
-                <Button variant="outline" className="w-full rounded-xl">Falar com Consultor</Button>
+                <Button variant="outline" className="w-full rounded-xl">Comprar Vitalício</Button>
               </div>
 
             </div>

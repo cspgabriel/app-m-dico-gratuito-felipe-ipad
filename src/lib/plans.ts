@@ -1,4 +1,4 @@
-export type PlanId = 'basico' | 'profissional' | 'multi';
+export type PlanId = 'basico' | 'profissional' | 'vitalicio';
 
 export interface Plan {
   id: PlanId;
@@ -14,6 +14,7 @@ export interface Plan {
     profissionais: number;
     tissTuss: boolean;
     multiClinica: boolean;
+    whatsappEmailMarketing: boolean;
   };
 }
 
@@ -23,19 +24,21 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Básico',
     price: 0,
     currency: 'BRL',
-    description: 'Perfeito para estudantes e residentes que estão começando.',
+    description: 'Plano gratuito permanente para começar a usar no consultório.',
     features: [
       'Até 50 pacientes',
       'Prontuário eletrônico básico',
-      'Prescrição digital simples',
-      'Suporte por e-mail',
+      'Agenda, consultas e recibos em PDF',
+      'Guias TISS/TUSS liberadas',
+      'Sem WhatsApp, e-mail ou automação de marketing',
     ],
     free: true,
     limits: {
       pacientes: 50,
       profissionais: 1,
-      tissTuss: false,
+      tissTuss: true,
       multiClinica: false,
+      whatsappEmailMarketing: false,
     },
   },
   profissional: {
@@ -47,8 +50,10 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       'Pacientes Ilimitados',
       'Prontuário eletrônico completo',
-      'Faturamento TISS/TUSS Automático',
+      'Guias TISS/TUSS e recibos em PDF',
+      'Exportação de documentos do paciente',
       'Controle Financeiro (Fluxo de Caixa)',
+      'Sem WhatsApp, e-mail ou automação de marketing',
     ],
     highlighted: true,
     limits: {
@@ -56,30 +61,33 @@ export const PLANS: Record<PlanId, Plan> = {
       profissionais: 1,
       tissTuss: true,
       multiClinica: false,
+      whatsappEmailMarketing: false,
     },
   },
-  multi: {
-    id: 'multi',
-    name: 'Multi-Clínicas',
-    price: 349,
+  vitalicio: {
+    id: 'vitalicio',
+    name: 'Vitalício',
+    price: 2497,
     currency: 'BRL',
-    description: 'Para clínicas com vários profissionais, recepção e gestão.',
+    description: 'Pagamento único para clínicas que querem aquisição própria e canais integrados.',
     features: [
       'Tudo do plano Profissional',
-      'Até 10 Profissionais Inclusos',
-      'Níveis de permissão Granulares',
-      'Repasses e Split de Pagamentos',
+      'Uso vitalício, sem mensalidades',
+      'Até 10 profissionais inclusos',
+      'WhatsApp e e-mail marketing integrados',
+      'Campanhas de reativação e lembretes comerciais',
     ],
     limits: {
       pacientes: 'unlimited',
       profissionais: 10,
       tissTuss: true,
       multiClinica: true,
+      whatsappEmailMarketing: true,
     },
   },
 };
 
-export const PLAN_LIST: Plan[] = [PLANS.basico, PLANS.profissional, PLANS.multi];
+export const PLAN_LIST: Plan[] = [PLANS.basico, PLANS.profissional, PLANS.vitalicio];
 
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);

@@ -33,6 +33,7 @@ import { waLink, reminderMessage } from '../lib/whatsapp';
 import { toast } from 'sonner';
 import { MessageCircle, Receipt } from 'lucide-react';
 import ReceiptDialog from '../components/ReceiptDialog';
+import { usePlan } from '../lib/entitlements';
 
 export default function PatientDetails() {
   const { user, tenantId, userProfile } = useAuth();
@@ -45,6 +46,7 @@ export default function PatientDetails() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const { canUseMarketingAutomation } = usePlan();
 
   useEffect(() => {
     if (!id) return;
@@ -223,24 +225,26 @@ export default function PatientDetails() {
                     >
                       <Calendar size={14} /> Agendar em Calendário
                     </Button>
-                    <Button
-                      onClick={() => {
-                        if (!patient.telefone) {
-                          toast.error('Paciente sem telefone cadastrado.');
-                          return;
-                        }
-                        const msg = reminderMessage(patient.nome, {
-                          clinicName: userProfile?.clinicName,
-                          doctorName: userProfile?.name,
-                          data: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-                          local: 'Presencial',
-                        });
-                        window.open(waLink(patient.telefone, msg), '_blank');
-                      }}
-                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"
-                    >
-                      <MessageCircle size={14} /> WhatsApp Lembrete
-                    </Button>
+                    {canUseMarketingAutomation && (
+                      <Button
+                        onClick={() => {
+                          if (!patient.telefone) {
+                            toast.error('Paciente sem telefone cadastrado.');
+                            return;
+                          }
+                          const msg = reminderMessage(patient.nome, {
+                            clinicName: userProfile?.clinicName,
+                            doctorName: userProfile?.name,
+                            data: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                            local: 'Presencial',
+                          });
+                          window.open(waLink(patient.telefone, msg), '_blank');
+                        }}
+                        variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"
+                      >
+                        <MessageCircle size={14} /> WhatsApp Lembrete
+                      </Button>
+                    )}
                     <Button
                       onClick={() => setReceiptOpen(true)}
                       variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"

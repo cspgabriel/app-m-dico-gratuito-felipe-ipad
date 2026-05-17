@@ -19,8 +19,10 @@ import {
   addDoc,
   collection,
   collectionGroup,
+  doc,
   onSnapshot,
   query,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -28,6 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 type ViewMode = 'day' | 'week' | 'month';
+type AppointmentStatus = 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show' | 'pending';
 
 function downloadBlob(content: string, filename: string, mime: string) {
   const blob = new Blob([content], { type: mime });
@@ -94,7 +97,7 @@ interface AgendaEvent {
   local: 'Presencial' | 'Telemedicina';
   calendario?: string;
   source: 'agendamento' | 'consulta';
-  status: 'confirmed' | 'pending';
+  status: AppointmentStatus;
 }
 
 const sameDay = (a: Date, b: Date) =>
@@ -123,6 +126,36 @@ const fmtTime = (d: Date) =>
     .toString()
     .padStart(2, '0')}`;
 
+const finalStatuses = new Set<AppointmentStatus>(['completed', 'cancelled', 'rescheduled', 'no_show']);
+
+const statusLabel: Record<AppointmentStatus, string> = {
+  scheduled: 'Agendada',
+  confirmed: 'Confirmada',
+  completed: 'Aconteceu',
+  cancelled: 'Cancelada',
+  rescheduled: 'Remarcada',
+  no_show: 'Não compareceu',
+  pending: 'Pendente',
+};
+
+const statusClass = (status: AppointmentStatus, source: AgendaEvent['source']) => {
+  if (source === 'consulta' || status === 'completed') return 'bg-emerald-50 border-emerald-100 text-emerald-900';
+  if (status === 'cancelled') return 'bg-red-50 border-red-100 text-red-900';
+  if (status === 'rescheduled') return 'bg-purple-50 border-purple-100 text-purple-900';
+  if (status === 'no_show') return 'bg-orange-50 border-orange-100 text-orange-900';
+  if (status === 'pending') return 'bg-amber-50 border-amber-100 text-amber-900';
+  return 'bg-blue-50 border-blue-100 text-blue-900';
+};
+
+const statusPillClass = (status: AppointmentStatus) => {
+  if (status === 'completed') return 'bg-emerald-100 text-emerald-700';
+  if (status === 'cancelled') return 'bg-red-100 text-red-700';
+  if (status === 'rescheduled') return 'bg-purple-100 text-purple-700';
+  if (status === 'no_show') return 'bg-orange-100 text-orange-700';
+  if (status === 'pending') return 'bg-amber-100 text-amber-700';
+  return 'bg-blue-100 text-blue-700';
+};
+
 export default function AgendaPage() {
   const { user, tenantId, userProfile } = useAuth();
   const navigate = useNavigate();
@@ -132,6 +165,7 @@ export default function AgendaPage() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [activeCalendar, setActiveCalendar] = useState<string>('all');
+  const [rescheduleFrom, setRescheduleFrom] = useState<AgendaEvent | null>(null);
 
   const userCalendars = userProfile?.calendarios?.length
     ? userProfile.calendarios
@@ -195,7 +229,7 @@ export default function AgendaPage() {
         local: a.local || 'Presencial',
         calendario: a.calendario || 'Consultório',
         source: 'agendamento',
-        status: a.status || 'confirmed',
+        status: a.status || 'scheduled',
       });
     }
     for (const c of consultas) {
@@ -209,7 +243,7 @@ export default function AgendaPage() {
         tipo: c.queixa ? `Consulta: ${c.queixa.slice(0, 30)}` : 'Consulta realizada',
         local: 'Presencial',
         source: 'consulta',
-        status: 'confirmed',
+        status: 'completed',
       });
     }
     out.sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -233,6 +267,44 @@ export default function AgendaPage() {
 
   const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const getEventsFor = (d: Date) => eventsByDay.get(dayKey(d)) ?? [];
+
+  const overdueEvents = useMemo(() => {
+    const now = new Date();
+    return filteredEvents
+      .filter((e) => {
+        if (e.source !== 'agendamento') return false;
+        if (finalStatuses.has(e.status)) return false;
+        const end = new Date(e.start.getTime() + e.durationMin * 60_000);
+        return end < now;
+      })
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+  }, [filteredEvents]);
+
+  const updateAppointmentStatus = async (event: AgendaEvent, status: AppointmentStatus) => {
+    if (event.source !== 'agendamento') return;
+    try {
+      await updateDoc(doc(db, 'agendamentos', event.id), {
+        status,
+        statusUpdatedAt: new Date().toISOString(),
+      });
+      toast.success(`Consulta marcada como: ${statusLabel[status]}.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao atualizar status da consulta.');
+    }
+  };
+
+  const markCompletedAndOpenConsultation = async (event: AgendaEvent) => {
+    await updateAppointmentStatus(event, 'completed');
+    navigate(`/consultation/${event.pacienteId}`);
+  };
+
+  const markRescheduled = async (event: AgendaEvent) => {
+    await updateAppointmentStatus(event, 'rescheduled');
+    setCurrentDate(event.start);
+    setRescheduleFrom(event);
+    setShowNewModal(true);
+  };
 
   const navigatePeriod = (dir: -1 | 1) => {
     if (view === 'day') setCurrentDate(addDays(currentDate, dir));
@@ -393,12 +465,63 @@ export default function AgendaPage() {
         </div>
       </div>
 
+      {overdueEvents.length > 0 && (
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 lg:p-5 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-4">
+            <div>
+              <h3 className="font-black text-amber-950 text-lg">Consultas com prazo vencido</h3>
+              <p className="text-sm text-amber-800">
+                O horário passou e o status ainda não foi resolvido. Marque o que aconteceu.
+              </p>
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider bg-white text-amber-700 px-3 py-1 rounded-full w-max">
+              {overdueEvents.length} pendente{overdueEvents.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {overdueEvents.slice(0, 6).map((event) => (
+              <div key={event.id} className="bg-white rounded-2xl border border-amber-100 p-3 flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 truncate">{event.patientName}</p>
+                    <p className="text-xs text-gray-500 font-medium">
+                      {event.start.toLocaleDateString('pt-BR')} às {fmtTime(event.start)} · {event.tipo}
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${statusPillClass(event.status)}`}>
+                    {statusLabel[event.status]}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:flex gap-2">
+                  <Button size="sm" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => markCompletedAndOpenConsultation(event)}>
+                    Aconteceu
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-xl border-red-200 text-red-700 hover:bg-red-50" onClick={() => updateAppointmentStatus(event, 'cancelled')}>
+                    Cancelada
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-xl border-purple-200 text-purple-700 hover:bg-purple-50" onClick={() => markRescheduled(event)}>
+                    Remarcada
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-xl border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => updateAppointmentStatus(event, 'no_show')}>
+                    Faltou
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden min-h-[600px]">
         {view === 'day' && (
           <DayView
             date={currentDate}
             events={getEventsFor(currentDate)}
             onEventClick={(e) => navigate(`/patients/${e.pacienteId}`)}
+            onCompleted={markCompletedAndOpenConsultation}
+            onCancelled={(e) => updateAppointmentStatus(e, 'cancelled')}
+            onRescheduled={markRescheduled}
+            onNoShow={(e) => updateAppointmentStatus(e, 'no_show')}
           />
         )}
         {view === 'week' && (
@@ -430,9 +553,17 @@ export default function AgendaPage() {
             patients={patients}
             tenantId={tenantId}
             defaultDate={currentDate}
+            defaultPatientId={rescheduleFrom?.pacienteId}
+            defaultTipo={rescheduleFrom ? `${rescheduleFrom.tipo} remarcada` : undefined}
+            defaultLocal={rescheduleFrom?.local}
+            defaultCalendar={rescheduleFrom?.calendario}
             calendars={userCalendars}
-            onClose={() => setShowNewModal(false)}
+            onClose={() => {
+              setRescheduleFrom(null);
+              setShowNewModal(false);
+            }}
             onCreated={() => {
+              setRescheduleFrom(null);
               setShowNewModal(false);
               toast.success('Agendamento criado!');
             }}
@@ -451,10 +582,18 @@ function DayView({
   date,
   events,
   onEventClick,
+  onCompleted,
+  onCancelled,
+  onRescheduled,
+  onNoShow,
 }: {
   date: Date;
   events: AgendaEvent[];
   onEventClick: (e: AgendaEvent) => void;
+  onCompleted: (e: AgendaEvent) => void;
+  onCancelled: (e: AgendaEvent) => void;
+  onRescheduled: (e: AgendaEvent) => void;
+  onNoShow: (e: AgendaEvent) => void;
 }) {
   return (
     <div className="p-6 lg:p-8">
@@ -484,18 +623,12 @@ function DayView({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
                         onClick={() => onEventClick(ev)}
-                        className={`mt-2 w-full text-left p-4 rounded-2xl border flex flex-col gap-2 cursor-pointer transition hover:shadow-md ${
-                          ev.source === 'consulta'
-                            ? 'bg-emerald-50 border-emerald-100 text-emerald-900'
-                            : ev.status === 'confirmed'
-                            ? 'bg-blue-50 border-blue-100 text-blue-900'
-                            : 'bg-amber-50 border-amber-100 text-amber-900'
-                        }`}
+                        className={`mt-2 w-full text-left p-4 rounded-2xl border flex flex-col gap-2 cursor-pointer transition hover:shadow-md ${statusClass(ev.status, ev.source)}`}
                       >
                         <div className="flex justify-between items-start gap-2">
                           <span className="font-bold">{ev.patientName}</span>
-                          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-white/60">
-                            {ev.source === 'consulta' ? 'Realizada' : ev.status === 'confirmed' ? 'Confirmado' : 'Aguardando'}
+                          <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md ${statusPillClass(ev.status)}`}>
+                            {ev.source === 'consulta' ? 'Realizada' : statusLabel[ev.status]}
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs font-medium opacity-80">
@@ -509,6 +642,22 @@ function DayView({
                           </span>
                           <span className="font-bold">• {ev.tipo}</span>
                         </div>
+                        {ev.source === 'agendamento' && !finalStatuses.has(ev.status) && (
+                          <div className="flex flex-wrap gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                            <Button size="sm" className="h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => onCompleted(ev)}>
+                              Aconteceu
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 rounded-lg border-red-200 text-red-700 hover:bg-red-50" onClick={() => onCancelled(ev)}>
+                              Cancelada
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 rounded-lg border-purple-200 text-purple-700 hover:bg-purple-50" onClick={() => onRescheduled(ev)}>
+                              Remarcada
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 rounded-lg border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => onNoShow(ev)}>
+                              Faltou
+                            </Button>
+                          </div>
+                        )}
                       </motion.button>
                     ))
                   )}
@@ -582,11 +731,17 @@ function WeekView({
                       key={ev.id}
                       onClick={() => onEventClick(ev)}
                       className={`w-full text-left text-[11px] p-1.5 rounded-md font-semibold truncate ${
-                        ev.source === 'consulta'
+                        ev.source === 'consulta' || ev.status === 'completed'
                           ? 'bg-emerald-100 text-emerald-800'
-                          : ev.status === 'confirmed'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-amber-100 text-amber-800'
+                          : ev.status === 'cancelled'
+                          ? 'bg-red-100 text-red-800'
+                          : ev.status === 'rescheduled'
+                          ? 'bg-purple-100 text-purple-800'
+                          : ev.status === 'no_show'
+                          ? 'bg-orange-100 text-orange-800'
+                          : ev.status === 'pending'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-blue-100 text-blue-800'
                       }`}
                       title={`${fmtTime(ev.start)} ${ev.patientName}`}
                     >
@@ -671,11 +826,17 @@ function MonthView({
                   <div
                     key={ev.id}
                     className={`text-[10px] truncate px-1.5 py-0.5 rounded font-semibold ${
-                      ev.source === 'consulta'
+                      ev.source === 'consulta' || ev.status === 'completed'
                         ? 'bg-emerald-100 text-emerald-700'
-                        : ev.status === 'confirmed'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-amber-100 text-amber-700'
+                        : ev.status === 'cancelled'
+                        ? 'bg-red-100 text-red-700'
+                        : ev.status === 'rescheduled'
+                        ? 'bg-purple-100 text-purple-700'
+                        : ev.status === 'no_show'
+                        ? 'bg-orange-100 text-orange-700'
+                        : ev.status === 'pending'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-blue-100 text-blue-700'
                     }`}
                   >
                     {fmtTime(ev.start)} {ev.patientName}
@@ -701,6 +862,10 @@ function NewAppointmentModal({
   patients,
   tenantId,
   defaultDate,
+  defaultPatientId,
+  defaultTipo,
+  defaultLocal,
+  defaultCalendar,
   calendars,
   onClose,
   onCreated,
@@ -708,12 +873,16 @@ function NewAppointmentModal({
   patients: { id: string; nome: string }[];
   tenantId: string | null;
   defaultDate: Date;
+  defaultPatientId?: string;
+  defaultTipo?: string;
+  defaultLocal?: 'Presencial' | 'Telemedicina';
+  defaultCalendar?: string;
   calendars: string[];
   onClose: () => void;
   onCreated: () => void;
 }) {
   const navigate = useNavigate();
-  const [pacienteId, setPacienteId] = useState('');
+  const [pacienteId, setPacienteId] = useState(defaultPatientId || '');
   const [date, setDate] = useState(() => {
     const d = new Date(defaultDate);
     return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
@@ -723,10 +892,10 @@ function NewAppointmentModal({
   });
   const [time, setTime] = useState('09:00');
   const [duracao, setDuracao] = useState(30);
-  const [tipo, setTipo] = useState('Primeira Consulta');
-  const [local, setLocal] = useState<'Presencial' | 'Telemedicina'>('Presencial');
+  const [tipo, setTipo] = useState(defaultTipo || 'Primeira Consulta');
+  const [local, setLocal] = useState<'Presencial' | 'Telemedicina'>(defaultLocal || 'Presencial');
   const [telemedicineUrl, setTelemedicineUrl] = useState('');
-  const [calendario, setCalendario] = useState(calendars[0] || 'Consultório');
+  const [calendario, setCalendario] = useState(defaultCalendar || calendars[0] || 'Consultório');
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -753,9 +922,10 @@ function NewAppointmentModal({
         local,
         telemedicineUrl: local === 'Telemedicina' ? telemedicineUrl.trim() : '',
         calendario,
-        status: 'confirmed',
+        status: 'scheduled',
         userId: tenantId,
         createdAt: new Date().toISOString(),
+        statusUpdatedAt: new Date().toISOString(),
       });
       onCreated();
     } catch (err) {

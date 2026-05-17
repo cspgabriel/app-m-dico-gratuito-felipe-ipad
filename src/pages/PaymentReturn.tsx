@@ -57,7 +57,7 @@ export default function PaymentReturn({ variant }: { variant: Variant }) {
     pending: {
       icon: <Clock className="text-amber-500" size={56} />,
       title: 'Pagamento pendente',
-      description: 'Estamos aguardando a confirmação do seu pagamento (Pix/boleto podem levar até 1 dia útil). Você receberá um e-mail quando for aprovado.',
+    description: 'Estamos aguardando a confirmação do seu pagamento. Pix e boleto podem levar até 1 dia útil para liberar o plano.',
     },
   }[variant];
 

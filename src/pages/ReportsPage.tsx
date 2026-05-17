@@ -84,7 +84,7 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="apple-card">
+        <Card className="apple-card min-w-0">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div>
@@ -143,8 +143,8 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="text-lg">Atendimentos por Mês</CardTitle>
           </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent className="h-80 min-h-[320px] min-w-0">
+            <ResponsiveContainer width="100%" height={320} minWidth={260} minHeight={260}>
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#8E8E93', fontSize: 12}} dy={10} />
@@ -159,12 +159,12 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="apple-card">
+        <Card className="apple-card min-w-0">
           <CardHeader>
             <CardTitle className="text-lg">Progresso de Evoluções</CardTitle>
           </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent className="h-80 min-h-[320px] min-w-0">
+            <ResponsiveContainer width="100%" height={320} minWidth={260} minHeight={260}>
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#8E8E93', fontSize: 12}} dy={10} />

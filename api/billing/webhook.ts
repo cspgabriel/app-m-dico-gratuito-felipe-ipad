@@ -64,8 +64,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const userId = payment.external_reference;
       if (userId) {
         const status = payment.status === 'approved' ? 'active' : payment.status === 'pending' ? 'pending' : 'failed';
+        const currentSub = await firestore.collection('subscriptions').doc(userId).get();
+        const selectedPlan = currentSub.data()?.plan || payment.metadata?.plan || 'basico';
         await firestore.collection('subscriptions').doc(userId).set({
           userId,
+          plan: selectedPlan,
           status,
           lastPaymentDate: payment.date_approved || payment.date_created,
           lastPaymentId: payment.id,
@@ -73,7 +76,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
         if (status === 'active') {
-          await firestore.collection('users').doc(userId).set({ subscriptionStatus: 'active' }, { merge: true });
+          await firestore.collection('users').doc(userId).set({ plan: selectedPlan, subscriptionStatus: 'active' }, { merge: true });
         }
       }
     }

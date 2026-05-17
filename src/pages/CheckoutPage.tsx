@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Loader2, ShieldCheck, CreditCard, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Loader2, ShieldCheck, CreditCard, AlertCircle, LockKeyhole, BadgeCheck, Landmark } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useAuth } from '../components/FirebaseProvider';
@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const planId = (params.get('plan') as PlanId) || 'profissional';
   const plan = PLANS[planId];
 
-  const [mode, setMode] = useState<Mode>('subscription');
+  const [mode, setMode] = useState<Mode>(planId === 'vitalicio' ? 'single' : 'subscription');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,9 +33,18 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const result = mode === 'subscription'
-        ? await createSubscriptionPreapproval(planId, user!.email!)
-        : await createCheckoutPreference(planId);
+      let result: { initPoint: string; preapprovalId?: string; preferenceId?: string };
+      if (mode === 'subscription') {
+        try {
+          result = await createSubscriptionPreapproval(planId, user!.email!);
+        } catch (subscriptionErr) {
+          console.warn('[checkout] subscription failed, falling back to Checkout Pro', subscriptionErr);
+          toast.info('Assinatura recorrente indisponível agora. Abrindo pagamento seguro único pelo Mercado Pago.');
+          result = await createCheckoutPreference(planId);
+        }
+      } else {
+        result = await createCheckoutPreference(planId);
+      }
       const initPoint = (result as any).initPoint;
       if (!initPoint) throw new Error('Não foi possível iniciar o pagamento.');
       window.location.href = initPoint;
@@ -79,26 +88,33 @@ export default function CheckoutPage() {
           <Card className="md:col-span-3 border-none shadow-xl rounded-3xl">
             <CardContent className="p-8 space-y-6">
               <div>
-                <p className="text-xs font-bold tracking-widest uppercase text-apple-blue mb-2">Finalizar assinatura</p>
+                <p className="text-xs font-bold tracking-widest uppercase text-apple-blue mb-2">Checkout seguro</p>
                 <h1 className="text-3xl font-black tracking-tight">Plano {plan.name}</h1>
                 <p className="text-gray-600 mt-2">{plan.description}</p>
+                <div className="grid grid-cols-3 gap-2 mt-5">
+                  <TrustBadge icon={LockKeyhole} label="SSL" sub="Conexão segura" />
+                  <TrustBadge icon={Landmark} label="Mercado Pago" sub="Pix, cartão e boleto" />
+                  <TrustBadge icon={BadgeCheck} label="Ativação" sub="Plano liberado no app" />
+                </div>
               </div>
 
               <div className="space-y-3">
                 <p className="text-sm font-bold text-gray-700">Modalidade de pagamento</p>
-                <button
-                  type="button"
-                  onClick={() => setMode('subscription')}
-                  className={`w-full text-left p-4 rounded-2xl border-2 transition-colors ${mode === 'subscription' ? 'border-apple-blue bg-blue-50/40' : 'border-gray-200 bg-white hover:border-gray-300'}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className={mode === 'subscription' ? 'text-apple-blue' : 'text-gray-300'} size={20} />
-                    <div className="flex-1">
-                      <p className="font-bold">Assinatura recorrente <span className="text-[10px] font-bold uppercase bg-apple-blue text-white px-2 py-0.5 rounded-full ml-1">Recomendado</span></p>
-                      <p className="text-xs text-gray-600 mt-1">Cobrança automática todo mês. Cancele quando quiser.</p>
+                {planId !== 'vitalicio' && (
+                  <button
+                    type="button"
+                    onClick={() => setMode('subscription')}
+                    className={`w-full text-left p-4 rounded-2xl border-2 transition-colors ${mode === 'subscription' ? 'border-apple-blue bg-blue-50/40' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className={mode === 'subscription' ? 'text-apple-blue' : 'text-gray-300'} size={20} />
+                      <div className="flex-1">
+                        <p className="font-bold">Assinatura recorrente <span className="text-[10px] font-bold uppercase bg-apple-blue text-white px-2 py-0.5 rounded-full ml-1">Recomendado</span></p>
+                        <p className="text-xs text-gray-600 mt-1">Cobrança automática todo mês. Cancele quando quiser.</p>
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -108,8 +124,10 @@ export default function CheckoutPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className={mode === 'single' ? 'text-apple-blue' : 'text-gray-300'} size={20} />
                     <div className="flex-1">
-                      <p className="font-bold">Pagamento único (1 mês)</p>
-                      <p className="text-xs text-gray-600 mt-1">Pague uma vez via Pix, boleto ou cartão. Sem renovação automática.</p>
+                      <p className="font-bold">{planId === 'vitalicio' ? 'Pagamento único vitalício' : 'Pagamento único (1 mês)'}</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {planId === 'vitalicio' ? 'Sem mensalidades. Libera o plano vitalício após aprovação.' : 'Pague uma vez via Pix, boleto ou cartão. Sem renovação automática.'}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -126,7 +144,7 @@ export default function CheckoutPage() {
                 disabled={submitting}
                 className="w-full h-14 rounded-2xl bg-apple-blue hover:bg-blue-600 text-white text-lg font-bold shadow-xl shadow-blue-500/30"
               >
-                {submitting ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" size={20} /> Continuar para o Mercado Pago</>}
+                {submitting ? <Loader2 className="animate-spin" /> : <><CreditCard className="mr-2" size={20} /> Pagar com Mercado Pago</>}
               </Button>
               <p className="text-xs text-gray-500 text-center flex items-center justify-center gap-1">
                 <ShieldCheck size={12} /> Pagamento protegido pelo Mercado Pago
@@ -161,6 +179,18 @@ export default function CheckoutPage() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TrustBadge({ icon: Icon, label, sub }: { icon: any; label: string; sub: string }) {
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-3">
+      <div className="w-8 h-8 rounded-xl bg-white text-apple-blue flex items-center justify-center mb-2 shadow-sm">
+        <Icon size={17} />
+      </div>
+      <p className="text-xs font-black text-gray-900 leading-tight">{label}</p>
+      <p className="text-[10px] text-gray-500 font-medium leading-tight mt-0.5">{sub}</p>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { plan, payerEmail } = (req.body || {}) as { plan?: string; payerEmail?: string };
     const planDef = plan ? PLAN_PRICES[plan as PlanKey] : undefined;
     if (!planDef || planDef.price <= 0) return res.status(400).json({ error: 'Plano inválido.' });
+    if (plan === 'vitalicio') return res.status(400).json({ error: 'Plano Vitalício usa pagamento único.' });
 
     const email = payerEmail || decoded.email;
     if (!email) return res.status(400).json({ error: 'E-mail do pagador é obrigatório.' });

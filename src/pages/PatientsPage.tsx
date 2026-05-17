@@ -177,7 +177,7 @@ export default function PatientsPage() {
                   ? `${patients.length} de ${maxPacientes} pacientes usados no plano ${planName}`
                   : `Você atingiu o limite de ${maxPacientes} pacientes do plano ${planName}`}
               </p>
-              <p className="text-xs text-gray-600">Faça upgrade para pacientes ilimitados, IA e faturamento TISS/TUSS.</p>
+              <p className="text-xs text-gray-600">Faça upgrade para pacientes ilimitados, relatórios e gestão financeira.</p>
             </div>
           </div>
           <Link to="/billing/checkout?plan=profissional">
