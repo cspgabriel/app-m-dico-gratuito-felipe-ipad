@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
@@ -46,7 +46,8 @@ const TUSS_MOCK = [
 type TabKey = 'evolution' | 'anamnese';
 
 export default function ConsultationPage() {
-  const { patientId } = useParams();
+  const { patientId, consultaId } = useParams();
+  const isEditing = !!consultaId;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, tenantId, userProfile } = useAuth();
@@ -85,13 +86,26 @@ export default function ConsultationPage() {
 
   useEffect(() => {
     if (!patientId) return;
-    const fetchPatient = async () => {
-      const docRef = doc(db, 'pacientes', patientId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) setPatient({ id: snap.id, ...snap.data() } as Paciente);
+    const fetchData = async () => {
+      const patientSnap = await getDoc(doc(db, 'pacientes', patientId));
+      if (patientSnap.exists()) setPatient({ id: patientSnap.id, ...patientSnap.data() } as Paciente);
+
+      if (consultaId) {
+        const cSnap = await getDoc(doc(db, `pacientes/${patientId}/consultas`, consultaId));
+        if (cSnap.exists()) {
+          const data = cSnap.data() as any;
+          setQueixa(data.queixa || '');
+          setHda(data.hda || '');
+          setExameFisico(data.exameFisico || '');
+          setHipoteseDiagnostica(data.hipoteseDiagnostica || '');
+          setConduta(data.conduta || '');
+          setSelectedCids(data.cid10 || []);
+          setSelectedTuss(data.tuss || []);
+        }
+      }
     };
-    fetchPatient();
-  }, [patientId]);
+    fetchData();
+  }, [patientId, consultaId]);
 
   const handleSave = async () => {
     if (!user || !patientId || !tenantId) return;
@@ -107,14 +121,20 @@ export default function ConsultationPage() {
           pacienteId: patientId, queixaPrincipal: queixa, hda,
           userId: tenantId, createdAt: now,
         });
+      } else if (isEditing && consultaId) {
+        await updateDoc(doc(db, `pacientes/${patientId}/consultas`, consultaId), {
+          queixa, hda, exameFisico, hipoteseDiagnostica, conduta,
+          cid10: selectedCids, tuss: selectedTuss,
+          updatedAt: now,
+        });
       } else {
         await addDoc(collection(db, `pacientes/${patientId}/consultas`), {
-          pacienteId: patientId, data: now, queixa, exameFisico,
+          pacienteId: patientId, data: now, queixa, hda, exameFisico,
           hipoteseDiagnostica, conduta,
           cid10: selectedCids, tuss: selectedTuss, userId: tenantId,
         });
       }
-      toast.success('Registro salvo com sucesso!');
+      toast.success(isEditing ? 'Consulta atualizada!' : 'Registro salvo com sucesso!');
       navigate(`/patients/${patientId}`);
     } catch (err) {
       console.error(err);
@@ -166,7 +186,7 @@ export default function ConsultationPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-apple-blue">
-                  {activeTab === 'anamnese' ? 'Anamnese' : 'Evolução Clínica'}
+                  {isEditing ? 'Editando ' : ''}{activeTab === 'anamnese' ? 'Anamnese' : 'Evolução Clínica'}
                 </span>
                 <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                 <span className="text-[11px] text-gray-500 capitalize truncate">{today}</span>

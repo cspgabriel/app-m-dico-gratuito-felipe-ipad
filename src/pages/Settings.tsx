@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { useAuth } from '../components/FirebaseProvider';
-import { User, Shield, CreditCard, Bell, Building, Users, Image as ImageIcon, Smartphone } from 'lucide-react';
+import { User, Shield, CreditCard, Bell, Building, Users, Image as ImageIcon, Smartphone, CalendarDays, X } from 'lucide-react';
+import { DEFAULT_CALENDARIOS } from '../components/FirebaseProvider';
 import { PWAInstallButton } from '../components/PWAInstallPrompt';
 import { Button } from '../components/ui/button';
 import { useState } from 'react';
@@ -13,7 +14,47 @@ export default function Settings() {
   const { user, userProfile, refreshProfile } = useAuth();
   const [logoUrl, setLogoUrl] = useState(userProfile?.logoUrl || '');
   const [clinicName, setClinicName] = useState(userProfile?.clinicName || '');
+  const [calendarios, setCalendarios] = useState<string[]>(userProfile?.calendarios?.length ? userProfile.calendarios : DEFAULT_CALENDARIOS);
+  const [newCalName, setNewCalName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [savingCals, setSavingCals] = useState(false);
+
+  const saveCalendarios = async (next: string[]) => {
+    if (!user) return;
+    setSavingCals(true);
+    try {
+      await setDoc(doc(db, 'users', user.uid), { calendarios: next }, { merge: true });
+      await refreshProfile();
+      toast.success('Agendas atualizadas!');
+    } catch {
+      toast.error('Erro ao salvar agendas.');
+    } finally {
+      setSavingCals(false);
+    }
+  };
+
+  const addCalendario = () => {
+    const name = newCalName.trim();
+    if (!name) return;
+    if (calendarios.includes(name)) {
+      toast.error('Já existe uma agenda com esse nome.');
+      return;
+    }
+    const next = [...calendarios, name];
+    setCalendarios(next);
+    setNewCalName('');
+    saveCalendarios(next);
+  };
+
+  const removeCalendario = (name: string) => {
+    if (calendarios.length <= 1) {
+      toast.error('Você precisa ter pelo menos uma agenda.');
+      return;
+    }
+    const next = calendarios.filter(c => c !== name);
+    setCalendarios(next);
+    saveCalendarios(next);
+  };
 
   const handleSaveClinicSettings = async () => {
     if (!user) return;
@@ -96,6 +137,47 @@ export default function Settings() {
             <Button variant="outline" className="w-full rounded-xl gap-2 font-bold text-apple-blue border-apple-blue/20 hover:bg-apple-blue/5">
               + Convidar Membro
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="apple-card md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CalendarDays size={20} />
+              Agendas da Clínica
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Organize sua rotina com várias agendas (ex: consultório, telemedicina, plantão). Cada agendamento é vinculado a uma agenda.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {calendarios.map(c => (
+                <span key={c} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 text-apple-blue text-sm font-semibold">
+                  {c}
+                  <button
+                    onClick={() => removeCalendario(c)}
+                    disabled={savingCals}
+                    className="hover:bg-blue-100 rounded-full w-5 h-5 flex items-center justify-center"
+                    title="Remover"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newCalName}
+                onChange={(e) => setNewCalName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addCalendario()}
+                placeholder="Nova agenda (ex: Domicílio)"
+                className="flex-1 text-sm p-2 rounded-xl border-gray-200 border outline-none focus:ring-1 focus:ring-apple-blue"
+              />
+              <Button onClick={addCalendario} disabled={savingCals || !newCalName.trim()} className="rounded-xl bg-apple-blue hover:bg-blue-600 text-white font-bold">
+                Adicionar
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

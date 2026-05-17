@@ -10,10 +10,11 @@ import {
   Clock,
   X,
   User as UserIcon,
+  Download,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { useAuth } from '../components/FirebaseProvider';
+import { useAuth, DEFAULT_CALENDARIOS } from '../components/FirebaseProvider';
 import {
   addDoc,
   collection,
@@ -28,6 +29,61 @@ import { toast } from 'sonner';
 
 type ViewMode = 'day' | 'week' | 'month';
 
+function downloadBlob(content: string, filename: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportAgendaCSV(events: AgendaEvent[]) {
+  const esc = (s: string) => `"${(s || '').replace(/"/g, '""')}"`;
+  const header = 'Data,Hora,Duracao_min,Paciente,Tipo,Modalidade,Calendario,Status';
+  const rows = events.map(e => [
+    e.start.toLocaleDateString('pt-BR'),
+    e.start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    String(e.durationMin),
+    esc(e.patientName),
+    esc(e.tipo),
+    e.local,
+    esc(e.calendario || 'Consultório'),
+    e.status,
+  ].join(','));
+  downloadBlob([header, ...rows].join('\n'), `agenda-${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8');
+}
+
+function exportAgendaICS(events: AgendaEvent[]) {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fmtICS = (d: Date) => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+  const now = fmtICS(new Date());
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//MedSystem//Agenda//PT-BR',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+  ];
+  for (const e of events) {
+    const end = new Date(e.start.getTime() + e.durationMin * 60_000);
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${e.id}@medsystem`,
+      `DTSTAMP:${now}`,
+      `DTSTART:${fmtICS(e.start)}`,
+      `DTEND:${fmtICS(end)}`,
+      `SUMMARY:${e.patientName} — ${e.tipo}`,
+      `DESCRIPTION:Calendário: ${e.calendario || 'Consultório'}\\nModalidade: ${e.local}`,
+      `LOCATION:${e.local}`,
+      'END:VEVENT',
+    );
+  }
+  lines.push('END:VCALENDAR');
+  downloadBlob(lines.join('\r\n'), `agenda-${new Date().toISOString().slice(0,10)}.ics`, 'text/calendar;charset=utf-8');
+}
+
 interface AgendaEvent {
   id: string;
   pacienteId: string;
@@ -36,6 +92,7 @@ interface AgendaEvent {
   durationMin: number;
   tipo: string;
   local: 'Presencial' | 'Telemedicina';
+  calendario?: string;
   source: 'agendamento' | 'consulta';
   status: 'confirmed' | 'pending';
 }
@@ -67,12 +124,18 @@ const fmtTime = (d: Date) =>
     .padStart(2, '0')}`;
 
 export default function AgendaPage() {
-  const { user, tenantId } = useAuth();
+  const { user, tenantId, userProfile } = useAuth();
   const navigate = useNavigate();
 
   const [view, setView] = useState<ViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [activeCalendar, setActiveCalendar] = useState<string>('all');
+
+  const userCalendars = userProfile?.calendarios?.length
+    ? userProfile.calendarios
+    : DEFAULT_CALENDARIOS;
 
   const [patients, setPatients] = useState<{ id: string; nome: string }[]>([]);
   const [agendamentos, setAgendamentos] = useState<any[]>([]);
@@ -130,6 +193,7 @@ export default function AgendaPage() {
         durationMin: a.duracao ?? 30,
         tipo: a.tipo || 'Consulta',
         local: a.local || 'Presencial',
+        calendario: a.calendario || 'Consultório',
         source: 'agendamento',
         status: a.status || 'confirmed',
       });
@@ -152,15 +216,20 @@ export default function AgendaPage() {
     return out;
   }, [agendamentos, consultas, patients]);
 
+  const filteredEvents = useMemo(
+    () => activeCalendar === 'all' ? events : events.filter(e => (e.calendario || 'Consultório') === activeCalendar),
+    [events, activeCalendar]
+  );
+
   const eventsByDay = useMemo(() => {
     const map = new Map<string, AgendaEvent[]>();
-    for (const e of events) {
+    for (const e of filteredEvents) {
       const key = `${e.start.getFullYear()}-${e.start.getMonth()}-${e.start.getDate()}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(e);
     }
     return map;
-  }, [events]);
+  }, [filteredEvents]);
 
   const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const getEventsFor = (d: Date) => eventsByDay.get(dayKey(d)) ?? [];
@@ -202,13 +271,81 @@ export default function AgendaPage() {
             {events.length} evento{events.length === 1 ? '' : 's'} no total
           </p>
         </div>
-        <Button
-          onClick={() => setShowNewModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20 font-bold"
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu(v => !v)}
+              className="h-10 px-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 text-sm font-semibold text-gray-700 flex items-center gap-2 transition-colors shadow-sm"
+            >
+              <Download size={16} />
+              Exportar
+            </button>
+            {showExportMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
+                <div className="absolute right-0 top-12 z-50 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2">
+                  <button
+                    onClick={() => { exportAgendaICS(filteredEvents); setShowExportMenu(false); }}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-blue-50 transition-colors"
+                  >
+                    <p className="font-semibold text-sm text-gray-900">📅 Calendário (.ics)</p>
+                    <p className="text-[11px] text-gray-500">Importar no Google, Apple, Outlook, Teams</p>
+                  </button>
+                  <button
+                    onClick={() => { exportAgendaCSV(filteredEvents); setShowExportMenu(false); }}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-blue-50 transition-colors"
+                  >
+                    <p className="font-semibold text-sm text-gray-900">📊 Planilha (.csv)</p>
+                    <p className="text-[11px] text-gray-500">Abrir em Excel, Google Sheets, Numbers</p>
+                  </button>
+                  <div className="px-3 py-2 mt-1 border-t border-gray-100 text-[11px] text-gray-500 leading-relaxed">
+                    <p className="font-bold text-gray-700 mb-1">Como importar:</p>
+                    <p>• <b>Google</b>: calendar.google.com → Configurações → Importar</p>
+                    <p>• <b>Apple</b>: Calendário → Arquivo → Importar</p>
+                    <p>• <b>Outlook</b>: Arquivo → Abrir → Importar .ics</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <Button
+            onClick={() => setShowNewModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-2 shadow-lg shadow-blue-500/20 font-bold h-10"
+          >
+            <Plus size={18} />
+            Novo Agendamento
+          </Button>
+        </div>
+      </div>
+
+      {/* Calendar selector */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-2 flex items-center gap-1 overflow-x-auto">
+        <button
+          onClick={() => setActiveCalendar('all')}
+          className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+            activeCalendar === 'all' ? 'bg-apple-blue text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'
+          }`}
         >
-          <Plus size={18} />
-          Novo Agendamento
-        </Button>
+          Todas
+        </button>
+        {userCalendars.map(c => (
+          <button
+            key={c}
+            onClick={() => setActiveCalendar(c)}
+            className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              activeCalendar === c ? 'bg-apple-blue text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+        <button
+          onClick={() => navigate('/settings')}
+          className="shrink-0 ml-auto px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-gray-600"
+          title="Gerenciar calendários em Configurações"
+        >
+          + Gerenciar
+        </button>
       </div>
 
       {/* Toolbar */}
@@ -293,6 +430,7 @@ export default function AgendaPage() {
             patients={patients}
             tenantId={tenantId}
             defaultDate={currentDate}
+            calendars={userCalendars}
             onClose={() => setShowNewModal(false)}
             onCreated={() => {
               setShowNewModal(false);
@@ -563,12 +701,14 @@ function NewAppointmentModal({
   patients,
   tenantId,
   defaultDate,
+  calendars,
   onClose,
   onCreated,
 }: {
   patients: { id: string; nome: string }[];
   tenantId: string | null;
   defaultDate: Date;
+  calendars: string[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -586,6 +726,7 @@ function NewAppointmentModal({
   const [tipo, setTipo] = useState('Primeira Consulta');
   const [local, setLocal] = useState<'Presencial' | 'Telemedicina'>('Presencial');
   const [telemedicineUrl, setTelemedicineUrl] = useState('');
+  const [calendario, setCalendario] = useState(calendars[0] || 'Consultório');
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -611,6 +752,7 @@ function NewAppointmentModal({
         tipo,
         local,
         telemedicineUrl: local === 'Telemedicina' ? telemedicineUrl.trim() : '',
+        calendario,
         status: 'confirmed',
         userId: tenantId,
         createdAt: new Date().toISOString(),
@@ -734,16 +876,32 @@ function NewAppointmentModal({
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 block">
-              Tipo
-            </label>
-            <Input
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value)}
-              placeholder="Ex: Primeira Consulta, Retorno..."
-              className="rounded-xl h-11"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                Tipo
+              </label>
+              <Input
+                value={tipo}
+                onChange={(e) => setTipo(e.target.value)}
+                placeholder="Ex: Retorno..."
+                className="rounded-xl h-11"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                Agenda
+              </label>
+              <select
+                value={calendario}
+                onChange={(e) => setCalendario(e.target.value)}
+                className="w-full h-11 rounded-xl border border-gray-200 px-3 bg-white"
+              >
+                {calendars.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {local === 'Telemedicina' && (

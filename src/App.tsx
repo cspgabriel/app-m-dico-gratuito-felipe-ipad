@@ -16,7 +16,8 @@ import {
   X,
   UsersRound,
   CreditCard,
-  ChevronDown
+  ChevronDown,
+  Receipt
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -41,6 +42,7 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const TeamManagement = lazy(() => import('./pages/TeamManagement'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
+const ReceiptsPage = lazy(() => import('./pages/ReceiptsPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
 
@@ -195,10 +197,17 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           active={location.pathname === '/team'}
           onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          to="/billing" 
-          icon={CreditCard} 
-          label="Faturamento" 
+        <SidebarItem
+          to="/receipts"
+          icon={Receipt}
+          label="Recibos"
+          active={location.pathname === '/receipts'}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
+          to="/billing"
+          icon={CreditCard}
+          label="Faturamento"
           active={location.pathname === '/billing'}
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -329,9 +338,11 @@ export default function App() {
             <Route path="/patients/:id" element={<MainLayout><PatientDetails /></MainLayout>} />
             <Route path="/consultations" element={<MainLayout><ConsultationsList /></MainLayout>} />
             <Route path="/consultation/:patientId" element={<MainLayout><ConsultationPage /></MainLayout>} />
+            <Route path="/consultation/:patientId/:consultaId" element={<MainLayout><ConsultationPage /></MainLayout>} />
             <Route path="/reports" element={<MainLayout><ReportsPage /></MainLayout>} />
             <Route path="/team" element={<MainLayout><TeamManagement /></MainLayout>} />
             <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
+            <Route path="/receipts" element={<MainLayout><ReceiptsPage /></MainLayout>} />
             <Route path="/billing/plans" element={<MainLayout><BillingPage /></MainLayout>} />
             <Route path="/billing/checkout" element={<CheckoutPage />} />
             <Route path="/billing/success" element={<PaymentReturn variant="success" />} />

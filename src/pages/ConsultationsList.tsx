@@ -117,42 +117,37 @@ export default function ConsultationsList() {
           </div>
         ) : (
           filtered.map(c => (
-            <Link key={c.id} to={`/patients/${c.pacienteId}`}>
-              <Card className="hover:shadow-lg transition-all border-white/80 bg-white/60 backdrop-blur-md rounded-2xl group cursor-pointer">
+            <button
+              key={c.id}
+              onClick={() => navigate(`/consultation/${c.pacienteId}/${c.id}`)}
+              className="w-full text-left"
+            >
+              <Card className="hover:shadow-lg hover:border-blue-200 transition-all border-gray-100 bg-white rounded-2xl group cursor-pointer">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 text-apple-blue font-bold mb-1">
                         <User size={16} />
-                        {patientsMap[c.pacienteId] || 'Paciente Removido'}
+                        <span className="truncate">{patientsMap[c.pacienteId] || 'Paciente Removido'}</span>
                       </div>
-                      <p className="text-sm font-medium">{c.queixa || 'Sem queixa principal relatada'}</p>
-                      {c.cid10 && c.cid10.length > 0 && <p className="text-xs text-apple-gray-dark mt-2">CID: {c.cid10.join(', ')}</p>}
+                      <p className="text-sm font-medium text-gray-700 line-clamp-2">{c.queixa || 'Sem queixa principal relatada'}</p>
+                      {c.cid10 && c.cid10.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-2">CID: {c.cid10.join(', ')}</p>
+                      )}
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                       <div className="flex gap-2 relative z-10" onClick={(e) => e.preventDefault()}>
-                        <Button
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toast.success('Lembrete de consulta enviado por e-mail/SMS!');
-                          }}
-                          className="text-[10px] uppercase font-bold h-7 rounded-md border text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                        >
-                          Lembrete
-                        </Button>
-                      </div>
+                    <div className="flex flex-col items-end gap-2 shrink-0">
                       <div className="bg-blue-50 text-apple-blue px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                         <Calendar size={12} />
-                        {new Date(c.data).toLocaleDateString()}
+                        {new Date(c.data).toLocaleDateString('pt-BR')}
                       </div>
+                      <span className="text-[10px] uppercase font-bold text-gray-400 group-hover:text-apple-blue transition-colors">
+                        Abrir →
+                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </button>
           ))
         )}
       </div>

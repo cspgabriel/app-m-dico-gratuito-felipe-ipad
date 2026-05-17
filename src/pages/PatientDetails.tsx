@@ -29,10 +29,10 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { generatePDF } from '../lib/pdf-service';
-import { downloadReceipt } from '../lib/receipt-service';
 import { waLink, reminderMessage } from '../lib/whatsapp';
 import { toast } from 'sonner';
 import { MessageCircle, Receipt } from 'lucide-react';
+import ReceiptDialog from '../components/ReceiptDialog';
 
 export default function PatientDetails() {
   const { user, tenantId, userProfile } = useAuth();
@@ -44,6 +44,7 @@ export default function PatientDetails() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -241,28 +242,10 @@ export default function PatientDetails() {
                       <MessageCircle size={14} /> WhatsApp Lembrete
                     </Button>
                     <Button
-                      onClick={() => {
-                        const numero = `${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-                        downloadReceipt({
-                          numero,
-                          data: new Date().toISOString(),
-                          valor: 0,
-                          servico: 'Consulta médica',
-                          prestador: {
-                            nome: userProfile?.name || 'Profissional',
-                            crm: userProfile?.crm,
-                            endereco: userProfile?.clinicAddress,
-                          },
-                          tomador: {
-                            nome: patient.nome,
-                            cpf: patient.cpf,
-                          },
-                        });
-                        toast.success('Recibo gerado! Ajuste o valor no PDF se necessário.');
-                      }}
-                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 font-semibold"
+                      onClick={() => setReceiptOpen(true)}
+                      variant="outline" size="sm" className="w-full rounded-xl justify-start gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"
                     >
-                      <Receipt size={14} /> Gerar Recibo
+                      <Receipt size={14} /> Emitir Recibo
                     </Button>
                   </div>
                 </div>
@@ -443,6 +426,14 @@ export default function PatientDetails() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {patient && (
+        <ReceiptDialog
+          open={receiptOpen}
+          onClose={() => setReceiptOpen(false)}
+          patient={{ id: patient.id!, nome: patient.nome, cpf: patient.cpf }}
+        />
+      )}
     </div>
   );
 }

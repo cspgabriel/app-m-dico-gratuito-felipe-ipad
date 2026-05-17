@@ -17,7 +17,10 @@ export interface UserProfile {
   onboardingComplete?: boolean;
   plan?: 'basico' | 'profissional' | 'multi';
   subscriptionStatus?: 'free' | 'pending' | 'active' | 'authorized' | 'paused' | 'cancelled' | 'failed';
+  calendarios?: string[]; // ex: ['Consultório', 'Telemedicina', 'Plantão']
 }
+
+export const DEFAULT_CALENDARIOS = ['Consultório', 'Telemedicina', 'Plantão'];
 
 interface AuthContextType {
   user: User | null;
