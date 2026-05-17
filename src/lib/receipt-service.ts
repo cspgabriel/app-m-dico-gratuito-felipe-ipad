@@ -188,3 +188,106 @@ export function downloadReceipt(r: ReceiptData) {
   const doc = generateReceiptPDF(r);
   doc.save(`recibo-${r.numero}.pdf`);
 }
+
+type ExportableReceipt = ReceiptData & {
+  pacienteNome?: string;
+  status?: string;
+  createdAt?: string;
+  cancelledAt?: string;
+};
+
+const escapeHtml = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+export function exportReceiptsXls(receipts: ExportableReceipt[], filename = 'recibos.xls') {
+  const rows = receipts.map((r) => ({
+    Numero: r.numero,
+    Data: fmtDate(r.data),
+    Status: r.status === 'cancelled' ? 'Cancelado' : 'Emitido',
+    Paciente: r.pacienteNome || r.tomador?.nome || '',
+    CPF: r.tomador?.cpf || '',
+    Servico: r.servico,
+    FormaPagamento: r.formaPagamento || '',
+    Valor: r.valor,
+    Prestador: r.prestador?.nome || '',
+    CRM: r.prestador?.crm || '',
+    CpfCnpjPrestador: r.prestador?.cpfCnpj || '',
+    Observacoes: r.observacoes || '',
+    CriadoEm: r.createdAt ? fmtDate(r.createdAt) : '',
+    CanceladoEm: r.cancelledAt ? fmtDate(r.cancelledAt) : '',
+  }));
+
+  const headers = Object.keys(rows[0] || {
+    Numero: '',
+    Data: '',
+    Status: '',
+    Paciente: '',
+    CPF: '',
+    Servico: '',
+    FormaPagamento: '',
+    Valor: '',
+    Prestador: '',
+    CRM: '',
+    CpfCnpjPrestador: '',
+    Observacoes: '',
+    CriadoEm: '',
+    CanceladoEm: '',
+  });
+
+  const table = `
+    <html>
+      <head><meta charset="UTF-8" /></head>
+      <body>
+        <table border="1">
+          <thead><tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${rows.map(row => `<tr>${headers.map(h => `<td>${escapeHtml((row as any)[h])}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </body>
+    </html>`;
+
+  const blob = new Blob([table], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function downloadReceiptsPDF(receipts: ExportableReceipt[], filename = 'recibos.pdf') {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const total = receipts.reduce((sum, r) => sum + (r.status === 'cancelled' ? 0 : r.valor || 0), 0);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(0, 48, 135);
+  doc.text('RELATÓRIO DE RECIBOS', 105, 18, { align: 'center' });
+
+  (doc as any).autoTable({
+    startY: 28,
+    head: [['Nº', 'Data', 'Paciente', 'Serviço', 'Status', 'Valor']],
+    body: receipts.map(r => [
+      r.numero,
+      fmtDate(r.data),
+      r.pacienteNome || r.tomador?.nome || '',
+      r.servico,
+      r.status === 'cancelled' ? 'Cancelado' : 'Emitido',
+      fmtBRL(r.valor || 0),
+    ]),
+    foot: [['', '', '', '', 'Total válido', fmtBRL(total)]],
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [0, 48, 135] },
+    footStyles: { fillColor: [245, 248, 255], textColor: [0, 48, 135], fontStyle: 'bold' },
+    margin: { left: 12, right: 12 },
+  });
+
+  doc.save(filename);
+}

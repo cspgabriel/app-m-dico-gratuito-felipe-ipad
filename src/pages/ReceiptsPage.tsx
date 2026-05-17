@@ -5,8 +5,8 @@ import { useAuth } from '../components/FirebaseProvider';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Receipt, Search, Download, Calendar, TrendingUp, User, Plus, Ban } from 'lucide-react';
-import { downloadReceipt, type ReceiptData } from '../lib/receipt-service';
+import { Receipt, Search, Download, Calendar, TrendingUp, User, Plus, Ban, FileSpreadsheet, Files } from 'lucide-react';
+import { downloadReceipt, downloadReceiptsPDF, exportReceiptsXls, type ReceiptData } from '../lib/receipt-service';
 import { Link } from 'react-router-dom';
 import ReceiptDialog from '../components/ReceiptDialog';
 import { Paciente } from '../types';
@@ -91,6 +91,22 @@ export default function ReceiptsPage() {
     }
   };
 
+  const exportAllXls = () => {
+    if (recibos.length === 0) {
+      toast.info('Nenhum recibo para exportar.');
+      return;
+    }
+    exportReceiptsXls(recibos, `recibos-clinicafy-${new Date().toISOString().slice(0, 10)}.xls`);
+  };
+
+  const exportAllPdf = () => {
+    if (recibos.length === 0) {
+      toast.info('Nenhum recibo para exportar.');
+      return;
+    }
+    downloadReceiptsPDF(recibos, `recibos-clinicafy-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -99,6 +115,24 @@ export default function ReceiptsPage() {
           <p className="text-apple-gray-dark">Histórico de recibos emitidos e carnê para IR</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button
+            onClick={exportAllXls}
+            variant="outline"
+            disabled={recibos.length === 0}
+            className="h-11 rounded-xl font-bold gap-2"
+            title="Exportar todos os recibos em XLS"
+          >
+            <FileSpreadsheet size={18} /> XLS todos
+          </Button>
+          <Button
+            onClick={exportAllPdf}
+            variant="outline"
+            disabled={recibos.length === 0}
+            className="h-11 rounded-xl font-bold gap-2"
+            title="Exportar todos os recibos em PDF"
+          >
+            <Files size={18} /> PDF todos
+          </Button>
           <select
             value={selectedPatientId}
             onChange={(e) => setSelectedPatientId(e.target.value)}
