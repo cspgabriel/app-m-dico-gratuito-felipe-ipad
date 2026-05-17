@@ -20,6 +20,13 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/FirebaseProvider';
 import BrandLogo, { BrandMark } from '@/components/BrandLogo';
 
+const sectionReveal = {
+  initial: { opacity: 0, y: 32 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.16 },
+  transition: { duration: 0.55, ease: 'easeOut' },
+} as const;
+
 export default function LandingPage() {
   const { user } = useAuth();
 
@@ -56,7 +63,7 @@ export default function LandingPage() {
       </nav>
 
       {/* 01. Hero Section */}
-      <section className="pt-32 pb-20 px-6 overflow-hidden lg:pt-40 lg:pb-32">
+      <motion.section {...sectionReveal} className="pt-32 pb-20 px-6 overflow-hidden lg:pt-40 lg:pb-32">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative">
           <div className="absolute top-0 -left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-[100px] -z-10 animate-pulse"></div>
           
@@ -72,7 +79,7 @@ export default function LandingPage() {
                 Vagas limitadas
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-[#0D183D]">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-apple-blue lg:text-[#0D183D]">
               Sistema inteligente para <span className="text-apple-blue">clínicas que querem crescer.</span>
             </h1>
             <p className="text-xl text-apple-gray-dark leading-relaxed max-w-2xl mx-auto lg:mx-0">
@@ -133,10 +140,10 @@ export default function LandingPage() {
             <div className="absolute -inset-4 bg-gradient-to-tr from-[#1677FF] to-[#00D1B2] rounded-[40px] blur-3xl opacity-20 -z-10 mt-12"></div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 02. O Problema */}
-      <section className="py-24 px-6 bg-gray-50 border-y border-gray-100">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 leading-tight">
@@ -170,10 +177,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 03. A Agitação */}
-      <section className="py-24 px-6 relative overflow-hidden">
+      <motion.section {...sectionReveal} className="py-24 px-6 relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
@@ -201,10 +208,10 @@ export default function LandingPage() {
             Cada minuto gasto preenchendo papelada burocrática ou corrigindo erros de faturamento é um minuto a menos com seu paciente — ou com sua família. Gerenciar múltiplos profissionais não deveria custar a sua paz de espírito.
           </motion.p>
         </div>
-      </section>
+      </motion.section>
 
       {/* 04. A Solução */}
-      <section className="py-32 px-6 bg-[#0B1120] text-white overflow-hidden relative">
+      <motion.section {...sectionReveal} className="py-32 px-6 bg-[#0B1120] text-white overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 mix-blend-overlay"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 blur-[100px] rounded-full pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/10 blur-[100px] rounded-full pointer-events-none"></div>
@@ -298,10 +305,10 @@ export default function LandingPage() {
              </ul>
            </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 05. Pilares da Plataforma */}
-      <section className="py-24 px-6 bg-white">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
           {/* Feature 1 */}
           <div className="flex flex-col sm:flex-row gap-6 items-start">
@@ -352,10 +359,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 06. Segurança e Jurídico */}
-      <section className="py-24 px-6 bg-slate-50 border-y border-gray-200">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-slate-50 border-y border-gray-200">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-12">
           <div className="flex-1 space-y-6">
             <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg">
@@ -376,10 +383,10 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 06.5 Preços (Pricing) */}
-      <section className="py-24 px-6 bg-white" id="pricing">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-white" id="pricing">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4">
             Planos sob medida para o seu momento.
@@ -450,10 +457,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 06.6 Comparativo */}
-      <section className="py-24 px-6 bg-gray-50 border-y border-gray-200">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-gray-50 border-y border-gray-200">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-4xl font-black tracking-tight text-center text-gray-900 mb-4">
             Por que trocar pelo Clinicafy.
@@ -490,10 +497,10 @@ export default function LandingPage() {
             </table>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 06.65 Trust badges */}
-      <section className="py-16 px-6 bg-white">
+      <motion.section {...sectionReveal} className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <p className="text-center text-xs font-bold uppercase tracking-widest text-gray-500 mb-8">Segurança e Conformidade</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -513,10 +520,10 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 06.7 FAQ */}
-      <section className="py-24 px-6 bg-white">
+      <motion.section {...sectionReveal} className="py-24 px-6 bg-white">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl font-black tracking-tight text-center text-gray-900 mb-12">
             Perguntas Frequentes
@@ -540,10 +547,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 07. Oferta / CTA Final */}
-      <section className="py-32 px-6 bg-white overflow-hidden">
+      <motion.section {...sectionReveal} className="py-32 px-6 bg-white overflow-hidden">
         <div className="max-w-4xl mx-auto relative">
           <div className="absolute inset-0 bg-gradient-to-br from-apple-blue to-blue-700 rounded-[40px] shadow-2xl transform rotate-1 opacity-10"></div>
           <div className="bg-white rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 p-12 md:p-20 text-center relative z-10 flex flex-col items-center">
@@ -563,10 +570,10 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 08. Rodapé */}
-      <footer className="pt-20 pb-12 px-6 border-t border-gray-200 bg-[#0B1120] text-gray-400">
+      <motion.footer {...sectionReveal} className="pt-20 pb-12 px-6 border-t border-gray-200 bg-[#0B1120] text-gray-400">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-16">
           <div className="flex flex-col gap-6 w-full md:w-1/3">
             <BrandLogo dark markClassName="w-10 h-10" textClassName="font-black text-2xl tracking-tight" />
@@ -613,7 +620,7 @@ export default function LandingPage() {
              </div>
           </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
