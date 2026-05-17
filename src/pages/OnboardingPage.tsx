@@ -4,6 +4,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 import { useAuth, UserProfile } from '../components/FirebaseProvider';
+import { ensureFreeSubscription } from '../lib/billing';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import {
@@ -142,8 +143,11 @@ export default function OnboardingPage() {
         role: 'admin',
         tenantId: user.uid,
         onboardingComplete: true,
+        plan: 'basico',
+        subscriptionStatus: 'free',
       };
       await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
+      await ensureFreeSubscription(user.uid);
       await refreshProfile();
       toast.success('Tudo pronto! Bem-vindo(a) ao MedSystem.');
       navigate('/dashboard');

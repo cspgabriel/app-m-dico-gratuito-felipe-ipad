@@ -75,6 +75,17 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
+    // SUBSCRIPTIONS — owner can read, can self-bootstrap a free plan;
+    // paid status transitions happen via Admin SDK (webhook), which bypasses these rules.
+    match /subscriptions/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId
+                    && incoming().status == 'free'
+                    && incoming().plan == 'basico'
+                    && incoming().amount == 0;
+      allow update, delete: if false;
+    }
+
     // Collection Group Queries
     match /{path=**}/consultas/{id} {
       allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;

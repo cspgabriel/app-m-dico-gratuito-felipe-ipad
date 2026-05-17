@@ -25,7 +25,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { auth } from './lib/firebase';
 import { signOut } from 'firebase/auth';
 import { CalendarDays } from 'lucide-react';
-import AIChatbot from './components/AIChatbot';
 import PWAInstallPrompt, { PWAInstallButton } from './components/PWAInstallPrompt';
 
 // Lazy load pages
@@ -42,6 +41,8 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const TeamManagement = lazy(() => import('./pages/TeamManagement'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
 const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 
 const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?: string, icon: any, label: string, active: boolean, subItems?: { label: string, to: string, icon: any, active: boolean }[], onClick?: () => void }) => {
@@ -319,7 +320,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </AnimatePresence>
           </div>
         </ScrollArea>
-        <AIChatbot />
       </main>
     </div>
   );
@@ -344,6 +344,11 @@ export default function App() {
             <Route path="/marketing" element={<MainLayout><MarketingInsights /></MainLayout>} />
             <Route path="/team" element={<MainLayout><TeamManagement /></MainLayout>} />
             <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
+            <Route path="/billing/plans" element={<MainLayout><BillingPage /></MainLayout>} />
+            <Route path="/billing/checkout" element={<CheckoutPage />} />
+            <Route path="/billing/success" element={<PaymentReturn variant="success" />} />
+            <Route path="/billing/failure" element={<PaymentReturn variant="failure" />} />
+            <Route path="/billing/pending" element={<PaymentReturn variant="pending" />} />
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

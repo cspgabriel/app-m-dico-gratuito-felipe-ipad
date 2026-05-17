@@ -9,11 +9,10 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { 
-  ArrowLeft, 
-  Sparkles, 
-  Save, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Save,
+  CheckCircle2,
   Database,
   Stethoscope,
   Microscope,
@@ -59,9 +58,6 @@ export default function ConsultationPage() {
   const [tussSearch, setTussSearch] = useState('');
   const [selectedTuss, setSelectedTuss] = useState<string[]>([]);
 
-  const [isAiProcessing, setIsAiProcessing] = useState(false);
-  const [aiInput, setAiInput] = useState('');
-
   useEffect(() => {
     if (!patientId) return;
     const fetchPatient = async () => {
@@ -71,32 +67,6 @@ export default function ConsultationPage() {
     };
     fetchPatient();
   }, [patientId]);
-
-  const handleAiProcess = async () => {
-    if (!aiInput) return;
-    try {
-      setIsAiProcessing(true);
-      const res = await fetch('/api/ai/process-anamnesis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: aiInput }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setQueixa(data.queixaPrincipal || '');
-      setHda(data.hda || '');
-      setExameFisico(data.exameFisico || '');
-      setConduta(data.conduta || '');
-      toast.success('Informações processadas e organizadas com sucesso!');
-      setAiInput('');
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao processar as informações.');
-    } finally {
-      setIsAiProcessing(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!user || !patientId || !tenantId) return;
@@ -150,30 +120,6 @@ export default function ConsultationPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="apple-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-md flex items-center gap-2">
-                <Sparkles size={18} className="text-apple-blue" />
-                Anamnese Estruturada Automática
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea 
-                placeholder="Cole aqui o texto da consulta ou dite as observações para o sistema organizar..."
-                className="min-h-[120px] rounded-xl bg-white/40 border border-white/20 focus-visible:ring-apple-blue resize-none"
-                value={aiInput}
-                onChange={e => setAiInput(e.target.value)}
-              />
-              <Button 
-                onClick={handleAiProcess} 
-                className="w-full bg-white/60 hover:bg-white/80 text-[#007AFF] font-bold rounded-xl gap-2 border-none backdrop-blur-sm"
-                disabled={isAiProcessing}
-              >
-                {isAiProcessing ? 'Processando...' : 'Organizar Automaticamente'}
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card className="apple-card">
             <CardContent className="pt-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

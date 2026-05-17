@@ -291,7 +291,7 @@ export default function LandingPage() {
                </li>
                <li className="flex items-start gap-3">
                  <div className="mt-1 text-blue-200">✓</div>
-                 <p className="text-blue-50 font-medium">Atendimento humanizado: a Anamnese assistida por IA e os atalhos de transcrição deixam você focar no olho a olho.</p>
+                 <p className="text-blue-50 font-medium">Atendimento humanizado: modelos de anamnese rápida e atalhos de prescrição para você focar no olho a olho.</p>
                </li>
                <li className="flex items-start gap-3">
                  <div className="mt-1 text-blue-200">✓</div>
@@ -405,7 +405,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Prescrição digital simples</li>
                 <li className="flex items-center gap-3 text-gray-400 font-medium"><ChevronRight size={18} className="text-gray-300"/> <span className="line-through">Faturamento TISS/TUSS</span></li>
               </ul>
-              <Link to="/login">
+              <Link to={user ? '/dashboard' : '/login?next=%2Fdashboard'}>
                 <Button className="w-full h-14 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-lg">Criar Conta Grátis</Button>
               </Link>
             </div>
@@ -423,11 +423,11 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Pacientes Ilimitados</li>
-                <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Prontuário com Anamnese em IA (Beta)</li>
+                <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Prontuário eletrônico completo</li>
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Faturamento TISS/TUSS Automático</li>
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Controle Financeiro (Fluxo de Caixa)</li>
               </ul>
-              <Link to="/login">
+              <Link to={user ? '/billing/checkout?plan=profissional' : '/login?next=%2Fbilling%2Fcheckout%3Fplan%3Dprofissional'}>
                 <Button className="w-full h-14 rounded-2xl bg-apple-blue hover:bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-500/30">Assinar e Começar</Button>
               </Link>
             </div>
@@ -446,8 +446,8 @@ export default function LandingPage() {
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Níveis de permissão Granulares</li>
                 <li className="flex items-center gap-3 text-gray-700 font-medium"><ChevronRight size={18} className="text-blue-500"/> Repasses e Split de Pagamentos</li>
               </ul>
-              <Link to="/login">
-                <Button className="w-full h-14 rounded-2xl bg-gray-900 hover:bg-black text-white font-bold text-lg">Criar Conta da Clínica</Button>
+              <Link to={user ? '/billing/checkout?plan=multi' : '/login?next=%2Fbilling%2Fcheckout%3Fplan%3Dmulti'}>
+                <Button className="w-full h-14 rounded-2xl bg-gray-900 hover:bg-black text-white font-bold text-lg">Assinar Plano Clínica</Button>
               </Link>
             </div>
           </div>

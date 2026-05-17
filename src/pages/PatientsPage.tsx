@@ -8,13 +8,15 @@ import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
 import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Search, UserPlus, FileText, Database } from 'lucide-react';
+import { Search, UserPlus, FileText, Database, Lock, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
+import { usePlan, checkPatientLimit } from '../lib/entitlements';
 
 export default function PatientsPage() {
   const { user, tenantId } = useAuth();
+  const { maxPacientes, planName, isFree } = usePlan();
   const [patients, setPatients] = useState<Paciente[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,9 +57,16 @@ export default function PatientsPage() {
     p.cpf?.includes(searchTerm)
   );
 
+  const limitCheck = checkPatientLimit(patients.length, maxPacientes);
+
   const handleCreatePatient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newName) return;
+
+    if (!limitCheck.allowed) {
+      toast.error(`Limite do plano ${planName} atingido (${maxPacientes} pacientes). Faça upgrade para continuar.`);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -158,6 +167,25 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
+      {isFree && maxPacientes !== 'unlimited' && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 bg-apple-blue text-white rounded-xl"><Sparkles size={16} /></div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">
+                {limitCheck.allowed
+                  ? `${patients.length} de ${maxPacientes} pacientes usados no plano ${planName}`
+                  : `Você atingiu o limite de ${maxPacientes} pacientes do plano ${planName}`}
+              </p>
+              <p className="text-xs text-gray-600">Faça upgrade para pacientes ilimitados, IA e faturamento TISS/TUSS.</p>
+            </div>
+          </div>
+          <Link to="/billing/checkout?plan=profissional">
+            <Button className="rounded-xl bg-apple-blue hover:bg-blue-600 text-white">Fazer Upgrade</Button>
+          </Link>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Pacientes</h2>
@@ -175,10 +203,19 @@ export default function PatientsPage() {
             Gerar Exemplos
           </Button>
 
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <Dialog open={isModalOpen} onOpenChange={(open) => {
+            if (open && !limitCheck.allowed) {
+              toast.error(`Limite do plano ${planName} atingido. Faça upgrade.`);
+              return;
+            }
+            setIsModalOpen(open);
+          }}>
             <DialogTrigger asChild>
-              <Button className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20 w-full sm:w-auto">
-                <UserPlus size={20} />
+              <Button
+                disabled={!limitCheck.allowed}
+                className="bg-apple-blue hover:bg-blue-600 rounded-xl gap-2 shadow-lg shadow-blue-500/20 w-full sm:w-auto disabled:opacity-60"
+              >
+                {limitCheck.allowed ? <UserPlus size={20} /> : <Lock size={20} />}
                 Novo Paciente
               </Button>
             </DialogTrigger>
