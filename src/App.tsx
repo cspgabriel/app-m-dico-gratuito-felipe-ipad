@@ -16,7 +16,6 @@ import {
   X,
   UsersRound,
   CreditCard,
-  LineChart,
   ChevronDown
 } from 'lucide-react';
 import { Button } from './components/ui/button';
@@ -44,7 +43,6 @@ const TeamManagement = lazy(() => import('./pages/TeamManagement'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
-const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 
 const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?: string, icon: any, label: string, active: boolean, subItems?: { label: string, to: string, icon: any, active: boolean }[], onClick?: () => void }) => {
   const [isExpanded, setIsExpanded] = useState(active || subItems?.some(s => s.active));
@@ -162,46 +160,35 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           active={location.pathname === '/dashboard'}
           onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          icon={Users} 
-          label="Clínica" 
-          active={location.pathname.startsWith('/patient') || location.pathname === '/agenda' || location.pathname === '/consultations'} 
-          subItems={[
-            {
-              label: 'Agenda',
-              to: '/agenda',
-              icon: CalendarDays,
-              active: location.pathname === '/agenda'
-            },
-            {
-              label: 'Pacientes',
-              to: '/patients',
-              icon: Users,
-              active: location.pathname === '/patients' || location.pathname.startsWith('/patients/')
-            },
-            {
-              label: 'Consultas',
-              to: '/consultations',
-              icon: ClipboardList,
-              active: location.pathname === '/consultations'
-            }
-          ]}
+        <SidebarItem
+          to="/agenda"
+          icon={CalendarDays}
+          label="Agenda"
+          active={location.pathname === '/agenda'}
+          onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          to="/reports" 
-          icon={BarChart} 
-          label="Relatórios" 
+        <SidebarItem
+          to="/patients"
+          icon={Users}
+          label="Pacientes"
+          active={location.pathname === '/patients' || location.pathname.startsWith('/patients/')}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
+          to="/consultations"
+          icon={ClipboardList}
+          label="Consultas"
+          active={location.pathname === '/consultations'}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <SidebarItem
+          to="/reports"
+          icon={BarChart}
+          label="Relatórios"
           active={location.pathname === '/reports'}
           onClick={() => setMobileMenuOpen(false)}
         />
-        <SidebarItem 
-          to="/marketing" 
-          icon={LineChart} 
-          label="Marketing" 
-          active={location.pathname === '/marketing'}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-        <SidebarItem 
+        <SidebarItem
           to="/team" 
           icon={UsersRound} 
           label="Gestão de Equipe" 
@@ -343,7 +330,6 @@ export default function App() {
             <Route path="/consultations" element={<MainLayout><ConsultationsList /></MainLayout>} />
             <Route path="/consultation/:patientId" element={<MainLayout><ConsultationPage /></MainLayout>} />
             <Route path="/reports" element={<MainLayout><ReportsPage /></MainLayout>} />
-            <Route path="/marketing" element={<MainLayout><MarketingInsights /></MainLayout>} />
             <Route path="/team" element={<MainLayout><TeamManagement /></MainLayout>} />
             <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
             <Route path="/billing/plans" element={<MainLayout><BillingPage /></MainLayout>} />
