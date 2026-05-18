@@ -1,0 +1,7 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Clinicafy">
+  <rect width="1024" height="1024" rx="224" fill="#1677FF"/>
+  <g transform="translate(215 215) scale(.58)">
+    <path d="M380 128h264c96.8 0 176 79.2 176 176v120h132v264H820v120c0 96.8-79.2 176-176 176H380c-96.8 0-176-79.2-176-176V688H72V424h132V304c0-96.8 79.2-176 176-176Zm0 104c-39.6 0-72 32.4-72 72v228H176v48h240v228c0 39.6 32.4 72 72 72h264c39.6 0 72-32.4 72-72V580h240v-48H716V304c0-39.6-32.4-72-72-72H380Z" fill="#FFFFFF"/>
+    <path d="M468 372h88v280h-88zM372 468h280v88H372z" fill="#1677FF"/>
+  </g>
+</svg>
