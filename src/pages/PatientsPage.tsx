@@ -28,6 +28,10 @@ export default function PatientsPage() {
   const [newNascimento, setNewNascimento] = useState('');
   const [newSexo, setNewSexo] = useState<'M' | 'F' | 'Outro'>('M');
   const [newConvenio, setNewConvenio] = useState('');
+  const [newRegistroAns, setNewRegistroAns] = useState('');
+  const [newPlanoSaude, setNewPlanoSaude] = useState('');
+  const [newNumeroCarteira, setNewNumeroCarteira] = useState('');
+  const [newValidadeCarteira, setNewValidadeCarteira] = useState('');
   const [newAlergias, setNewAlergias] = useState('');
   const [newMedicacoes, setNewMedicacoes] = useState('');
   const [newHistorico, setNewHistorico] = useState('');
@@ -78,6 +82,10 @@ export default function PatientsPage() {
         nascimento: newNascimento,
         sexo: newSexo,
         convenio: newConvenio,
+        registroAns: newRegistroAns,
+        planoSaude: newPlanoSaude,
+        numeroCarteira: newNumeroCarteira,
+        validadeCarteira: newValidadeCarteira,
         alergias: newAlergias,
         medicacoes: newMedicacoes,
         historico: newHistorico,
@@ -93,6 +101,10 @@ export default function PatientsPage() {
       setNewNascimento('');
       setNewSexo('M');
       setNewConvenio('');
+      setNewRegistroAns('');
+      setNewPlanoSaude('');
+      setNewNumeroCarteira('');
+      setNewValidadeCarteira('');
       setNewAlergias('');
       setNewMedicacoes('');
       setNewHistorico('');
@@ -116,6 +128,10 @@ export default function PatientsPage() {
           nascimento: "1965-04-12",
           sexo: "F" as const,
           convenio: "Unimed",
+          registroAns: "000701",
+          planoSaude: "Unimed Essencial",
+          numeroCarteira: "000123456789",
+          validadeCarteira: "2027-12-31",
           alergias: "Iodo, Dipirona",
           medicacoes: "Losartana 50mg, AAS 100mg",
           historico: "Hipertensa há 10 anos. HAS bem controlada.",
@@ -130,6 +146,10 @@ export default function PatientsPage() {
           nascimento: "1980-11-20",
           sexo: "M" as const,
           convenio: "Amil",
+          registroAns: "326305",
+          planoSaude: "Amil Fácil",
+          numeroCarteira: "998877665544",
+          validadeCarteira: "2027-06-30",
           alergias: "",
           medicacoes: "Omeprazol 20mg",
           historico: "Gastrite esporádica. Sem comorbidades graves.",
@@ -144,6 +164,10 @@ export default function PatientsPage() {
           nascimento: "1995-08-05",
           sexo: "F" as const,
           convenio: "Particular",
+          registroAns: "",
+          planoSaude: "",
+          numeroCarteira: "",
+          validadeCarteira: "",
           alergias: "Penicilina",
           medicacoes: "Nenhuma",
           historico: "Paciente hígida.",
@@ -280,6 +304,42 @@ export default function PatientsPage() {
                     placeholder="Ex: Unimed, Amil..." 
                     value={newConvenio} 
                     onChange={e => setNewConvenio(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Registro ANS da Operadora</label>
+                  <Input
+                    placeholder="Ex: 326305"
+                    value={newRegistroAns}
+                    onChange={e => setNewRegistroAns(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Plano</label>
+                  <Input
+                    placeholder="Ex: Unimed Essencial"
+                    value={newPlanoSaude}
+                    onChange={e => setNewPlanoSaude(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Carteirinha</label>
+                  <Input
+                    placeholder="Número da carteira do beneficiário"
+                    value={newNumeroCarteira}
+                    onChange={e => setNewNumeroCarteira(e.target.value)}
+                    className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Validade da Carteira</label>
+                  <Input
+                    type="date"
+                    value={newValidadeCarteira}
+                    onChange={e => setNewValidadeCarteira(e.target.value)}
                     className="rounded-xl border-apple-gray focus-visible:ring-apple-blue"
                   />
                 </div>

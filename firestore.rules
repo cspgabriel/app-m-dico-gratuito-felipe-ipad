@@ -82,6 +82,13 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
+    // GUIAS TISS/TUSS — guia operacional vinculada a consulta e paciente
+    match /guias/{guiaId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
     // SUBSCRIPTIONS — owner can read, can self-bootstrap a free plan;
     // paid status transitions happen via Admin SDK (webhook), which bypasses these rules.
     match /subscriptions/{userId} {
