@@ -51,6 +51,7 @@ const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
 const SEOLandingPage = lazy(() => import('./pages/SEOLandingPage'));
+const PublicInfoPage = lazy(() => import('./pages/PublicInfoPage'));
 
 const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?: string, icon: any, label: string, active: boolean, subItems?: { label: string, to: string, icon: any, active: boolean }[], onClick?: () => void }) => {
   const [isExpanded, setIsExpanded] = useState(active || subItems?.some(s => s.active));
@@ -404,6 +405,13 @@ export default function App() {
             <Route path="/billing/failure" element={<PaymentReturn variant="failure" />} />
             <Route path="/billing/pending" element={<PaymentReturn variant="pending" />} />
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+            <Route path="/app" element={<PublicInfoPage />} />
+            <Route path="/google-play" element={<PublicInfoPage />} />
+            <Route path="/app-store" element={<PublicInfoPage />} />
+            <Route path="/suporte" element={<PublicInfoPage />} />
+            <Route path="/politica-de-privacidade" element={<PublicInfoPage />} />
+            <Route path="/termos-de-uso" element={<PublicInfoPage />} />
+            <Route path="/seguranca-lgpd" element={<PublicInfoPage />} />
             <Route path="/:slug" element={<SEOLandingPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

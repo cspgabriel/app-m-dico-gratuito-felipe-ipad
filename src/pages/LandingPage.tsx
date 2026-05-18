@@ -591,7 +591,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <p className="mt-8 text-sm text-gray-500 font-bold uppercase tracking-widest">
-              Sem cartão de crédito • LGPD • Hospedagem no Brasil
+              Sem cartão de crédito • LGPD • Acesso autenticado
             </p>
           </div>
         </div>
@@ -612,6 +612,7 @@ export default function LandingPage() {
               <h4 className="text-white font-bold text-sm tracking-widest uppercase">Produto</h4>
               <a href="#features" className="hover:text-blue-400 transition-colors text-sm font-medium">Funcionalidades</a>
               <a href="#pricing" className="hover:text-blue-400 transition-colors text-sm font-medium">Planos e Preços</a>
+              <Link to="/app" className="hover:text-blue-400 transition-colors text-sm font-medium">App Clinicafy</Link>
               <Link to="/login" className="hover:text-blue-400 transition-colors text-sm font-medium">Login</Link>
             </div>
             <div className="flex flex-col gap-4">
@@ -624,9 +625,10 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col gap-4 col-span-2 md:col-span-1">
               <h4 className="text-white font-bold text-sm tracking-widest uppercase">Legal</h4>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Termos de Uso</a>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Política de Privacidade</a>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Compliance LGPD</a>
+              <Link to="/termos-de-uso" className="hover:text-blue-400 transition-colors text-sm font-medium">Termos de Uso</Link>
+              <Link to="/politica-de-privacidade" className="hover:text-blue-400 transition-colors text-sm font-medium">Política de Privacidade</Link>
+              <Link to="/seguranca-lgpd" className="hover:text-blue-400 transition-colors text-sm font-medium">Segurança e LGPD</Link>
+              <Link to="/suporte" className="hover:text-blue-400 transition-colors text-sm font-medium">Suporte</Link>
             </div>
           </div>
         </div>
