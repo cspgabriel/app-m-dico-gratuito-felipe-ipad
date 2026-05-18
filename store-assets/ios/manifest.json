@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-05-18T14:12:58.224Z",
+  "iphone": {
+    "size": "1320x2868",
+    "files": [
+      "01-dashboard-clinica.png",
+      "02-prontuario-eletronico.png",
+      "03-agenda-medica.png",
+      "04-guias-tiss-tuss.png",
+      "05-recibos-pdf.png",
+      "06-relatorios-gestao.png",
+      "07-seguranca-lgpd.png",
+      "08-plano-gratis.png"
+    ]
+  },
+  "ipad": {
+    "size": "2048x2732",
+    "files": [
+      "01-ipad-dashboard-agenda.png",
+      "02-ipad-prontuario.png",
+      "03-ipad-faturamento.png",
+      "04-ipad-seguranca-planos.png"
+    ]
+  }
+}
