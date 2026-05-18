@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d4ed8;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.1"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="100" r="220" fill="#3b82f6" opacity="0.06"/>
+  <circle cx="150" cy="530" r="180" fill="#6366f1" opacity="0.07"/>
+  <circle cx="900" cy="500" r="120" fill="#1d4ed8" opacity="0.1"/>
+
+  <!-- Grid lines subtle -->
+  <line x1="0" y1="210" x2="1200" y2="210" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="420" x2="1200" y2="420" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="400" y1="0" x2="400" y2="630" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="800" y1="0" x2="800" y2="630" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+
+  <!-- Icon background -->
+  <rect x="88" y="200" width="84" height="84" rx="22" fill="url(#pill)" opacity="0.9" filter="url(#glow)"/>
+  <!-- Cross icon (medical) -->
+  <rect x="120" y="216" width="20" height="52" rx="6" fill="white"/>
+  <rect x="104" y="232" width="52" height="20" rx="6" fill="white"/>
+
+  <!-- Brand name -->
+  <text x="196" y="255" font-family="'Helvetica Neue', Arial, sans-serif" font-size="62" font-weight="800" fill="white" letter-spacing="-2">Clinicafy</text>
+
+  <!-- Tagline -->
+  <text x="88" y="332" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="400" fill="#93c5fd" letter-spacing="0.5">Sistema gratuito para clínicas e consultórios médicos</text>
+
+  <!-- Divider -->
+  <rect x="88" y="368" width="80" height="4" rx="2" fill="url(#pill)"/>
+
+  <!-- Feature pills -->
+  <rect x="88" y="400" width="148" height="40" rx="20" fill="url(#card)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="162" y="425" font-family="'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="600" fill="#93c5fd" text-anchor="middle">📅 Agenda</text>
+
+  <rect x="252" y="400" width="164" height="40" rx="20" fill="url(#card)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="334" y="425" font-family="'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="600" fill="#93c5fd" text-anchor="middle">👥 Pacientes</text>
+
+  <rect x="432" y="400" width="168" height="40" rx="20" fill="url(#card)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="516" y="425" font-family="'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="600" fill="#93c5fd" text-anchor="middle">📋 Consultas</text>
+
+  <rect x="616" y="400" width="184" height="40" rx="20" fill="url(#card)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="708" y="425" font-family="'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="600" fill="#93c5fd" text-anchor="middle">📊 Relatórios</text>
+
+  <!-- CTA box -->
+  <rect x="88" y="468" width="320" height="52" rx="14" fill="url(#pill)"/>
+  <text x="248" y="500" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="white" text-anchor="middle">Acesse gratuitamente</text>
+
+  <!-- Domain -->
+  <text x="88" y="572" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="500" fill="#60a5fa" letter-spacing="1">clinicafy.com.br</text>
+
+  <!-- Right side mockup card -->
+  <rect x="780" y="160" width="340" height="310" rx="24" fill="white" opacity="0.05" stroke="white" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="800" y="182" width="140" height="14" rx="7" fill="white" opacity="0.15"/>
+  <rect x="800" y="208" width="300" height="50" rx="12" fill="white" opacity="0.07"/>
+  <rect x="816" y="222" width="20" height="20" rx="6" fill="#3b82f6" opacity="0.6"/>
+  <rect x="848" y="226" width="100" height="8" rx="4" fill="white" opacity="0.3"/>
+  <rect x="848" y="238" width="60" height="6" rx="3" fill="white" opacity="0.15"/>
+
+  <rect x="800" y="270" width="300" height="50" rx="12" fill="white" opacity="0.07"/>
+  <rect x="816" y="284" width="20" height="20" rx="6" fill="#6366f1" opacity="0.6"/>
+  <rect x="848" y="288" width="120" height="8" rx="4" fill="white" opacity="0.3"/>
+  <rect x="848" y="300" width="70" height="6" rx="3" fill="white" opacity="0.15"/>
+
+  <rect x="800" y="332" width="300" height="50" rx="12" fill="white" opacity="0.07"/>
+  <rect x="816" y="346" width="20" height="20" rx="6" fill="#10b981" opacity="0.6"/>
+  <rect x="848" y="350" width="90" height="8" rx="4" fill="white" opacity="0.3"/>
+  <rect x="848" y="362" width="50" height="6" rx="3" fill="white" opacity="0.15"/>
+
+  <rect x="800" y="394" width="300" height="50" rx="12" fill="white" opacity="0.07"/>
+  <rect x="816" y="408" width="20" height="20" rx="6" fill="#f59e0b" opacity="0.6"/>
+  <rect x="848" y="412" width="110" height="8" rx="4" fill="white" opacity="0.3"/>
+  <rect x="848" y="424" width="65" height="6" rx="3" fill="white" opacity="0.15"/>
+</svg>
