@@ -24,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/FirebaseProvider';
 import BrandLogo, { BrandMark } from '@/components/BrandLogo';
+import { SEO_BASE_URL, seoLandingPages } from '@/data/seoLandingPages';
 
 const sectionReveal = {
   initial: { opacity: 0, y: 32 },
@@ -34,7 +35,7 @@ const sectionReveal = {
 
 export default function LandingPage() {
   const { user } = useAuth();
-  const shareUrl = 'https://clinicafy.app/';
+  const shareUrl = `${SEO_BASE_URL}/`;
   const shareText = 'Conheça o Clinicafy: prontuário, agenda, recibos e guias TISS/TUSS para clínicas médicas.';
   const encodedShareUrl = encodeURIComponent(shareUrl);
   const encodedShareText = encodeURIComponent(shareText);
@@ -44,7 +45,7 @@ export default function LandingPage() {
       <Helmet>
         <title>Clinicafy — Prontuário, agenda e gestão para consultórios médicos</title>
         <meta name="description" content="Sistema completo para consultórios e clínicas: prontuário eletrônico, agenda, faturamento TISS/TUSS e financeiro. Comece grátis, sem cartão de crédito." />
-        <link rel="canonical" href="https://clinicafy.app/" />
+        <link rel="canonical" href={`${SEO_BASE_URL}/`} />
       </Helmet>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-white/20 px-4 sm:px-6 py-4">
@@ -614,10 +615,12 @@ export default function LandingPage() {
               <Link to="/login" className="hover:text-blue-400 transition-colors text-sm font-medium">Login</Link>
             </div>
             <div className="flex flex-col gap-4">
-              <h4 className="text-white font-bold text-sm tracking-widest uppercase">Empresa</h4>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Sobre nós</a>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Blog</a>
-              <a href="#" className="hover:text-blue-400 transition-colors text-sm font-medium">Contato</a>
+              <h4 className="text-white font-bold text-sm tracking-widest uppercase">Soluções</h4>
+              {seoLandingPages.slice(0, 3).map((page) => (
+                <Link key={page.slug} to={`/${page.slug}`} className="hover:text-blue-400 transition-colors text-sm font-medium">
+                  {page.keyword}
+                </Link>
+              ))}
             </div>
             <div className="flex flex-col gap-4 col-span-2 md:col-span-1">
               <h4 className="text-white font-bold text-sm tracking-widest uppercase">Legal</h4>

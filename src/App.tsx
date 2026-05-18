@@ -50,6 +50,7 @@ const GuidesPage = lazy(() => import('./pages/GuidesPage'));
 const MarketingInsights = lazy(() => import('./pages/MarketingInsights'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const PaymentReturn = lazy(() => import('./pages/PaymentReturn'));
+const SEOLandingPage = lazy(() => import('./pages/SEOLandingPage'));
 
 const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?: string, icon: any, label: string, active: boolean, subItems?: { label: string, to: string, icon: any, active: boolean }[], onClick?: () => void }) => {
   const [isExpanded, setIsExpanded] = useState(active || subItems?.some(s => s.active));
@@ -373,6 +374,7 @@ export default function App() {
             <Route path="/billing/failure" element={<PaymentReturn variant="failure" />} />
             <Route path="/billing/pending" element={<PaymentReturn variant="pending" />} />
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+            <Route path="/:slug" element={<SEOLandingPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Suspense>
