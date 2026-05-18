@@ -158,7 +158,7 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
       >
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <Receipt size={18} />
             </div>
             <div>
@@ -303,26 +303,26 @@ export default function ReceiptDialog({ open, onClose, patient }: ReceiptDialogP
           </div>
 
           {valorNum > 0 && (
-            <div className="rounded-xl bg-emerald-50 p-4 border border-emerald-100">
-              <div className="flex items-center justify-between text-sm text-emerald-900">
+            <div className="rounded-xl bg-blue-50 p-4 border border-blue-100">
+              <div className="flex items-center justify-between text-sm text-blue-900">
                 <span>Bruto</span>
                 <span className="font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorNum)}</span>
               </div>
               {(inssVal > 0 || irVal > 0) && (
                 <>
                   {inssVal > 0 && (
-                    <div className="flex items-center justify-between text-xs text-emerald-700 mt-1">
+                    <div className="flex items-center justify-between text-xs text-blue-700 mt-1">
                       <span>− INSS ({retencaoINSS}%)</span>
                       <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inssVal)}</span>
                     </div>
                   )}
                   {irVal > 0 && (
-                    <div className="flex items-center justify-between text-xs text-emerald-700 mt-1">
+                    <div className="flex items-center justify-between text-xs text-blue-700 mt-1">
                       <span>− IRRF ({retencaoIR}%)</span>
                       <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(irVal)}</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-base text-emerald-900 mt-2 pt-2 border-t border-emerald-200">
+                  <div className="flex items-center justify-between text-base text-blue-900 mt-2 pt-2 border-t border-blue-200">
                     <span className="font-bold">Líquido</span>
                     <span className="font-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(liquido)}</span>
                   </div>

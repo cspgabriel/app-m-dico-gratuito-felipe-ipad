@@ -156,7 +156,7 @@ export default function ReceiptsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard icon={Calendar} label={`Total em ${mes.slice(5, 7)}/${mes.slice(0, 4)}`} value={fmtBRL(totalMes)} color="blue" />
-        <StatCard icon={TrendingUp} label={`Acumulado em ${mes.slice(0, 4)}`} value={fmtBRL(totalAno)} color="emerald" />
+        <StatCard icon={TrendingUp} label={`Acumulado em ${mes.slice(0, 4)}`} value={fmtBRL(totalAno)} color="sky" />
         <StatCard icon={Receipt} label="Recibos válidos" value={validReceipts.length.toString()} color="indigo" />
       </div>
 
@@ -191,9 +191,9 @@ export default function ReceiptsPage() {
           {filtered.map(r => (
             <Card key={r.id} className={`rounded-2xl transition-shadow ${r.status === 'cancelled' ? 'border-red-100 bg-red-50/30 opacity-80' : 'border-gray-100 hover:shadow-md'}`}>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                       <Receipt size={18} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -213,8 +213,8 @@ export default function ReceiptsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-black text-emerald-600 text-lg">{fmtBRL(r.valor)}</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0">
+                    <span className="font-black text-blue-600 text-lg mr-auto sm:mr-0">{fmtBRL(r.valor)}</span>
                     <Button
                       onClick={() => downloadReceipt(r)}
                       variant="ghost"
@@ -266,10 +266,10 @@ export default function ReceiptsPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: 'blue' | 'emerald' | 'indigo' }) {
+function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: 'blue' | 'sky' | 'indigo' }) {
   const map = {
     blue: 'from-blue-500 to-blue-600',
-    emerald: 'from-emerald-500 to-emerald-600',
+    sky: 'from-sky-500 to-blue-600',
     indigo: 'from-indigo-500 to-indigo-600',
   } as const;
   return (

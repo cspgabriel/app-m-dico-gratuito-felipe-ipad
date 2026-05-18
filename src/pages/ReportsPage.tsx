@@ -76,7 +76,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Relatórios Gerenciais</h2>
           <p className="text-apple-gray-dark">Métricas e produtividade da clínica</p>
@@ -104,7 +104,7 @@ export default function ReportsPage() {
                 <p className="text-sm font-medium text-apple-gray-dark mb-1">Consultas este Mês</p>
                 <h3 className="text-3xl font-bold">{stats.consultationsThisMonth}</h3>
               </div>
-              <div className="p-3 bg-green-50 text-green-500 rounded-2xl">
+              <div className="p-3 bg-sky-50 text-sky-600 rounded-2xl">
                 <Calendar size={24} />
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function ReportsPage() {
                 <p className="text-sm font-medium text-apple-gray-dark mb-1">Evoluções Registradas</p>
                 <h3 className="text-3xl font-bold">{stats.evolutionsTotal}</h3>
               </div>
-              <div className="p-3 bg-purple-50 text-purple-500 rounded-2xl">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                 <FileText size={24} />
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function ReportsPage() {
                 <p className="text-sm font-medium text-apple-gray-dark mb-1">Taxa de Atualização</p>
                 <h3 className="text-3xl font-bold">{stats.updateRate}</h3>
               </div>
-              <div className="p-3 bg-orange-50 text-orange-500 rounded-2xl">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
                 <Activity size={24} />
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="text-lg">Atendimentos por Mês</CardTitle>
           </CardHeader>
-          <CardContent className="h-80 min-h-[320px] min-w-0">
+          <CardContent className="h-80 min-h-[320px] min-w-0 overflow-hidden">
             <ResponsiveContainer width="100%" height={320} minWidth={260} minHeight={260}>
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -163,7 +163,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="text-lg">Progresso de Evoluções</CardTitle>
           </CardHeader>
-          <CardContent className="h-80 min-h-[320px] min-w-0">
+          <CardContent className="h-80 min-h-[320px] min-w-0 overflow-hidden">
             <ResponsiveContainer width="100%" height={320} minWidth={260} minHeight={260}>
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -172,7 +172,7 @@ export default function ReportsPage() {
                 <Tooltip 
                   contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} 
                 />
-                <Line type="monotone" dataKey="consultas" stroke="#34C759" strokeWidth={3} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                <Line type="monotone" dataKey="consultas" stroke="#2563EB" strokeWidth={3} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

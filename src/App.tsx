@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { FirebaseProvider, useAuth } from './components/FirebaseProvider';
@@ -74,7 +74,7 @@ const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?
           </motion.div>
         </Link>
       ) : (
-        <div onClick={() => setIsExpanded(!isExpanded)}>
+        <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="w-full text-left">
           <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -90,7 +90,7 @@ const SidebarItem = ({ to, icon: Icon, label, active, subItems, onClick }: { to?
                 {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
               </div>
             </motion.div>
-        </div>
+        </button>
       )}
       
       <AnimatePresence>
@@ -133,18 +133,39 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const currentPlan = userProfile?.plan || 'basico';
 
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+  const toggleMenu = () => setMobileMenuOpen((open) => !open);
+  const refreshDashboard = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.location.assign('/dashboard');
+  };
+
+  useEffect(() => {
+    closeMobileMenu();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   if (!user) return <Navigate to="/login" />;
   if (userProfile && !userProfile.onboardingComplete && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" />;
   }
 
-  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
-
   const sidebarContent = (
     <>
       <div className="flex flex-col mb-10 px-2 mt-4 ml-2">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={refreshDashboard}
+          className="flex items-center gap-3 rounded-2xl text-left transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
+          aria-label="Ir para o dashboard e atualizar"
+        >
           {userProfile?.logoUrl ? (
             <img src={userProfile.logoUrl} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-lg" />
           ) : (
@@ -155,7 +176,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <h1 className="text-xl font-bold tracking-tight text-slate-800 leading-tight">
             {userProfile?.clinicName || 'Clinicafy'}
           </h1>
-        </div>
+        </button>
         {!userProfile?.clinicName && (
           <p className="text-[10px] uppercase tracking-widest text-apple-gray-dark font-bold mt-1 ml-13">Plataforma em Nuvem</p>
         )}
@@ -167,49 +188,49 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           icon={LayoutDashboard} 
           label="Dashboard" 
           active={location.pathname === '/dashboard'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/agenda"
           icon={CalendarDays}
           label="Agenda"
           active={location.pathname === '/agenda'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/patients"
           icon={Users}
           label="Pacientes"
           active={location.pathname === '/patients' || location.pathname.startsWith('/patients/')}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/consultations"
           icon={ClipboardList}
           label="Consultas"
-          active={location.pathname === '/consultations'}
-          onClick={() => setMobileMenuOpen(false)}
+          active={location.pathname === '/consultations' || location.pathname.startsWith('/consultation/')}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/reports"
           icon={BarChart}
           label="Relatórios"
           active={location.pathname === '/reports'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/guides"
           icon={FileText}
           label="Guias TISS/TUSS"
           active={location.pathname === '/guides'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/team" 
           icon={UsersRound} 
           label="Gestão de Equipe" 
           active={location.pathname === '/team'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         {currentPlan === 'vitalicio' && (
           <SidebarItem
@@ -217,7 +238,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             icon={Megaphone}
             label="Marketing"
             active={location.pathname === '/marketing'}
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={closeMobileMenu}
           />
         )}
         <SidebarItem
@@ -225,21 +246,21 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           icon={Receipt}
           label="Recibos"
           active={location.pathname === '/receipts'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem
           to="/billing"
           icon={CreditCard}
           label="Faturamento"
           active={location.pathname === '/billing'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
         <SidebarItem 
           to="/settings" 
           icon={SettingsIcon} 
           label="Configurações" 
           active={location.pathname === '/settings'}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
       </nav>
 
@@ -277,16 +298,23 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-black/5 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2 min-w-0">
-          {userProfile?.logoUrl ? (
-            <img src={userProfile.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
-          ) : (
-            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <BrandMark className="w-8 h-8" />
-            </div>
-          )}
-          <span className="font-bold truncate">{userProfile?.clinicName || 'Clinicafy'}</span>
+          <button
+            type="button"
+            onClick={refreshDashboard}
+            className="flex min-w-0 items-center gap-2 rounded-xl pr-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
+            aria-label="Ir para o dashboard e atualizar"
+          >
+            {userProfile?.logoUrl ? (
+              <img src={userProfile.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+            ) : (
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <BrandMark className="w-8 h-8" />
+              </div>
+            )}
+            <span className="font-bold truncate">{userProfile?.clinicName || 'Clinicafy'}</span>
+          </button>
         </div>
-        <button onClick={toggleMenu} className="p-2 rounded-full hover:bg-black/5">
+        <button onClick={toggleMenu} className="p-2 rounded-full hover:bg-black/5" aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -302,17 +330,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <>
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm"
-              onClick={toggleMenu}
+              className="fixed inset-0 bg-slate-950/45 z-40 lg:hidden backdrop-blur-sm"
+              onClick={closeMobileMenu}
             />
             <motion.aside
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-72 bg-white flex flex-col p-6 z-50 lg:hidden shadow-2xl overflow-y-auto"
+              className="fixed inset-y-0 left-0 w-[86vw] max-w-[320px] bg-white flex flex-col p-5 z-50 lg:hidden shadow-2xl overflow-y-auto overscroll-contain"
             >
               <button 
-                onClick={toggleMenu}
+                type="button"
+                onClick={closeMobileMenu}
                 className="absolute top-6 right-4 p-2 text-gray-500 hover:bg-gray-100 animate-in fade-in zoom-in duration-300 rounded-full z-10"
+                aria-label="Fechar menu"
               >
                 <X size={20} />
               </button>

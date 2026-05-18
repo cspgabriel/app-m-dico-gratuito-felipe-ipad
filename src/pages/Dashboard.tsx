@@ -114,7 +114,7 @@ export default function Dashboard() {
     <div className="space-y-4 lg:space-y-8 pb-10">
       <header className="flex flex-col xl:flex-row xl:justify-between xl:items-end gap-3 xl:gap-6 bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 md:p-6 xl:p-8 rounded-2xl md:rounded-[28px] xl:rounded-[32px] border border-blue-100/50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -mb-32"></div>
+        <div className="absolute bottom-0 left-20 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -mb-32"></div>
 
         <div className="relative z-10 w-full min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -147,7 +147,11 @@ export default function Dashboard() {
             </Button>
           </Link>
           {plan === 'basico' && (
-            <Button variant="outline" className="w-full rounded-xl border-2 border-amber-400 text-amber-600 hover:bg-amber-50 h-10 xl:h-12 px-2 xl:px-6 font-bold flex flex-col xl:flex-row gap-0.5 xl:gap-2 justify-center items-center text-[11px] xl:text-sm">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/billing/plans')}
+              className="w-full rounded-xl border-2 border-blue-300 text-blue-700 hover:bg-blue-50 h-10 xl:h-12 px-2 xl:px-6 font-bold flex flex-col xl:flex-row gap-0.5 xl:gap-2 justify-center items-center text-[11px] xl:text-sm"
+            >
               <Crown size={16} />
               <span>Upgrade</span>
             </Button>
@@ -176,7 +180,7 @@ export default function Dashboard() {
         </Link>
         <Link to="/consultations">
           <div className="bg-white rounded-2xl border border-gray-100 p-3 flex items-center gap-3 active:scale-[0.98] transition shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
               <FileText size={20} />
             </div>
             <div className="min-w-0">
@@ -215,7 +219,7 @@ export default function Dashboard() {
           icon={CalendarCheck}
           label="Realizadas"
           value={realizadasMes.toString()}
-          color="emerald"
+          color="blueSoft"
         />
         <StatCard
           icon={CalendarX}
@@ -227,7 +231,7 @@ export default function Dashboard() {
           icon={CalendarClock}
           label="Agendadas"
           value={agendadasMes.toString()}
-          color="purple"
+          color="blueDeep"
         />
       </div>
 
@@ -240,7 +244,7 @@ export default function Dashboard() {
                  description="Gere guias TISS/TUSS automaticamente para convênios."
                  icon={FileText}
                  isLocked={false}
-                 color="emerald"
+                 color="blue"
                  onClick={() => navigate('/guides')}
               />
               <PremiumFeatureCard
@@ -308,17 +312,17 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color, trend, limit }: { icon: any, label: string, value: string, color: 'blue' | 'emerald' | 'purple' | 'amber', trend?: string, limit?: string }) {
+function StatCard({ icon: Icon, label, value, color, trend, limit }: { icon: any, label: string, value: string, color: 'blue' | 'blueSoft' | 'blueDeep' | 'amber', trend?: string, limit?: string }) {
   const colors = {
      blue: 'bg-blue-50 text-blue-600 border-blue-100',
-     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-     purple: 'bg-purple-50 text-purple-600 border-purple-100',
+     blueSoft: 'bg-sky-50 text-sky-600 border-sky-100',
+     blueDeep: 'bg-indigo-50 text-indigo-600 border-indigo-100',
      amber: 'bg-amber-50 text-amber-600 border-amber-100',
   };
   const iconColors = {
      blue: 'text-blue-600',
-     emerald: 'text-emerald-600',
-     purple: 'text-purple-600',
+     blueSoft: 'text-sky-600',
+     blueDeep: 'text-indigo-600',
      amber: 'text-amber-600',
   };
 
@@ -342,7 +346,7 @@ function StatCard({ icon: Icon, label, value, color, trend, limit }: { icon: any
             <div className="flex items-end justify-between mt-0.5 lg:mt-1">
               <p className="text-2xl lg:text-4xl font-black tracking-tight text-gray-900">{value}</p>
             </div>
-            {trend && <p className="text-[10px] lg:text-xs font-bold text-emerald-600 mt-1 lg:mt-2 flex items-center gap-1"><TrendingUp size={12}/> {trend}</p>}
+            {trend && <p className="text-[10px] lg:text-xs font-bold text-blue-600 mt-1 lg:mt-2 flex items-center gap-1"><TrendingUp size={12}/> {trend}</p>}
           </div>
         </div>
       </CardContent>
@@ -410,7 +414,7 @@ function AgendaBlock({
                 onClick={onOpen}
                 className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer transition hover:shadow-sm ${
                   e.source === 'consulta'
-                    ? 'bg-emerald-50/60 border-emerald-100'
+                    ? 'bg-sky-50/60 border-sky-100'
                     : 'bg-blue-50/60 border-blue-100'
                 }`}
               >
@@ -452,7 +456,7 @@ function AgendaBlock({
 function PremiumFeatureCard({ title, description, icon: Icon, isLocked, color, onClick }: any) {
    const colorMap: any = {
       indigo: 'from-indigo-500 to-indigo-700 shadow-indigo-500/20',
-      emerald: 'from-emerald-500 to-emerald-700 shadow-emerald-500/20',
+      blue: 'from-blue-600 to-indigo-700 shadow-blue-500/20',
    };
 
    return (
