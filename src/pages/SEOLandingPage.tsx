@@ -15,7 +15,8 @@ export default function SEOLandingPage() {
   if (!page) return <Navigate to="/" replace />;
 
   const canonical = `${SEO_BASE_URL}/${page.slug}`;
-  const schema = {
+
+  const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Clinicafy',
@@ -30,6 +31,48 @@ export default function SEOLandingPage() {
     ],
   };
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `O que é ${page.keyword}?`,
+        acceptedAnswer: { '@type': 'Answer', text: page.lead },
+      },
+      {
+        '@type': 'Question',
+        name: `Para quem é indicado ${page.keyword}?`,
+        acceptedAnswer: { '@type': 'Answer', text: page.audience },
+      },
+      {
+        '@type': 'Question',
+        name: `Quais recursos o Clinicafy oferece para ${page.keyword}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Recursos: ${page.features.join(', ')}. Resultados: ${page.outcomes.join(', ')}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'O Clinicafy tem plano gratuito?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Sim. O plano Básico é gratuito e inclui até 50 pacientes, prontuário eletrônico, agenda e guias TISS/TUSS. Não é necessário cartão de crédito.',
+        },
+      },
+    ],
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Início', item: `${SEO_BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: page.keyword, item: canonical },
+    ],
+  };
+
   const relatedPages = seoLandingPages.filter((item) => item.slug !== page.slug).slice(0, 5);
 
   return (
@@ -41,7 +84,17 @@ export default function SEOLandingPage() {
         <meta property="og:title" content={page.title} />
         <meta property="og:description" content={page.description} />
         <meta property="og:url" content={canonical} />
-        <script type="application/ld+json">{JSON.stringify(schema)}</script>
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.clinicafy.com.br/pwa-512.png" />
+        <meta property="og:site_name" content="Clinicafy" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={page.title} />
+        <meta name="twitter:description" content={page.description} />
+        <meta name="twitter:image" content="https://www.clinicafy.com.br/pwa-512.png" />
+        <script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
       <nav className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur-xl px-5 py-4">
@@ -205,6 +258,43 @@ export default function SEOLandingPage() {
                   Criar minha conta grátis
                 </Button>
               </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-gray-100 bg-white px-5 py-20">
+          <div className="mx-auto max-w-4xl">
+            <p className="mb-3 text-xs font-black uppercase tracking-widest text-[#1677FF]">Perguntas frequentes</p>
+            <h2 className="mb-10 text-3xl font-black tracking-tight md:text-4xl">
+              Dúvidas sobre {page.keyword}
+            </h2>
+            <div className="space-y-4">
+              {[
+                {
+                  q: `O que é ${page.keyword}?`,
+                  a: page.lead,
+                },
+                {
+                  q: `Para quem é indicado ${page.keyword}?`,
+                  a: page.audience,
+                },
+                {
+                  q: `Quais recursos o Clinicafy oferece para ${page.keyword}?`,
+                  a: `Recursos incluídos: ${page.features.join(', ')}. Resultados esperados: ${page.outcomes.join(', ')}.`,
+                },
+                {
+                  q: 'O Clinicafy tem plano gratuito?',
+                  a: 'Sim. O plano Básico é gratuito e inclui até 50 pacientes, prontuário eletrônico, agenda e guias TISS/TUSS. Não é necessário cartão de crédito.',
+                },
+              ].map(({ q, a }) => (
+                <details key={q} className="rounded-2xl border border-gray-100 bg-gray-50 p-6 open:bg-white open:shadow-sm">
+                  <summary className="cursor-pointer text-lg font-black list-none flex items-center justify-between gap-3">
+                    {q}
+                    <span className="shrink-0 text-[#1677FF] text-xl font-bold leading-none">+</span>
+                  </summary>
+                  <p className="mt-4 text-base leading-relaxed text-gray-600">{a}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>

@@ -46,6 +46,22 @@ export default function LandingPage() {
         <title>Clinicafy — Prontuário, agenda e gestão para consultórios médicos</title>
         <meta name="description" content="Sistema completo para consultórios e clínicas: prontuário eletrônico, agenda, faturamento TISS/TUSS e financeiro. Comece grátis, sem cartão de crédito." />
         <link rel="canonical" href={`${SEO_BASE_URL}/`} />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Clinicafy',
+          url: `${SEO_BASE_URL}/`,
+          logo: `${SEO_BASE_URL}/pwa-512.png`,
+          description: 'Sistema médico para consultórios e clínicas: prontuário eletrônico, agenda, recibos, guias TISS/TUSS e gestão financeira.',
+          contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', availableLanguage: ['Portuguese'] },
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Clinicafy',
+          url: `${SEO_BASE_URL}/`,
+          description: 'Sistema médico para consultórios e clínicas com prontuário, agenda, recibos e guias TISS/TUSS. Plano gratuito disponível.',
+        })}</script>
       </Helmet>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-white/20 px-4 sm:px-6 py-4">
