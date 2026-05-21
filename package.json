@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && tsx scripts/generate-seo-html.ts",
     "clean": "rm -rf dist .vercel/output",
     "lint": "tsc --noEmit"
   },
