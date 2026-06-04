@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, onSnapshot, collectionGroup } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, collectionGroup, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
@@ -25,11 +25,12 @@ export default function Dashboard() {
 
     const patientsQuery = query(
       collection(db, 'pacientes'),
-      where('userId', '==', tenantId)
+      where('userId', '==', tenantId),
+      orderBy('createdAt', 'desc'),
+      limit(50)
     );
     const unsubP = onSnapshot(patientsQuery, (snapshot) => {
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paciente));
-      docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setAllPatients(docs);
       setRecentPatients(docs.slice(0, 5));
     }, (error) => {
@@ -37,13 +38,13 @@ export default function Dashboard() {
     });
 
     const unsubC = onSnapshot(
-      query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId)),
+      query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId), orderBy('data', 'desc'), limit(50)),
       (snap) => setConsultas(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }))),
       (err) => console.error(err)
     );
 
     const unsubA = onSnapshot(
-      query(collection(db, 'agendamentos'), where('userId', '==', tenantId)),
+      query(collection(db, 'agendamentos'), where('userId', '==', tenantId), orderBy('data', 'desc'), limit(50)),
       (snap) => setAgendamentos(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }))),
       (err) => console.error(err)
     );

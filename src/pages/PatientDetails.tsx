@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  doc, 
-  getDoc, 
-  collection, 
-  query, 
-  orderBy, 
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  orderBy,
   onSnapshot,
-  addDoc 
+  addDoc,
+  limit,
 } from 'firebase/firestore';
 import { db, storage } from '../lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -46,56 +47,66 @@ export default function PatientDetails() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'exams' | 'history'>('overview');
   const { canUseMarketingAutomation } = usePlan();
 
   useEffect(() => {
     if (!id) return;
-
-    const fetchPatient = async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const docRef = doc(db, 'pacientes', id);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        if (!cancelled && docSnap.exists()) {
           setPatient({ id: docSnap.id, ...docSnap.data() } as Paciente);
         }
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    };
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    if (activeTab !== 'overview' && activeTab !== 'consultations') return;
     const qConsultations = query(
       collection(db, `pacientes/${id}/consultas`),
-      orderBy('data', 'desc')
+      orderBy('data', 'desc'),
+      limit(20)
     );
-    const unsubConsultations = onSnapshot(qConsultations, (snap) => {
+    return onSnapshot(qConsultations, (snap) => {
       setConsultations(snap.docs.map(d => ({ id: d.id, ...d.data() } as Consulta)));
     });
+  }, [id, activeTab]);
 
+  useEffect(() => {
+    if (!id) return;
+    if (activeTab !== 'overview') return;
     const qAnamneses = query(
       collection(db, `pacientes/${id}/anamneses`),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(20)
     );
-    const unsubAnamneses = onSnapshot(qAnamneses, (snap) => {
+    return onSnapshot(qAnamneses, (snap) => {
       setAnamneses(snap.docs.map(d => ({ id: d.id, ...d.data() } as Anamnese)));
     });
+  }, [id, activeTab]);
 
+  useEffect(() => {
+    if (!id) return;
+    if (activeTab !== 'exams') return;
     const qExams = query(
       collection(db, `pacientes/${id}/exames`),
-      orderBy('dataUpload', 'desc')
+      orderBy('dataUpload', 'desc'),
+      limit(20)
     );
-    const unsubExams = onSnapshot(qExams, (snap) => {
+    return onSnapshot(qExams, (snap) => {
       setExams(snap.docs.map(d => ({ id: d.id, ...d.data() } as Exame)));
     });
-
-    fetchPatient();
-    return () => {
-      unsubConsultations();
-      unsubAnamneses();
-      unsubExams();
-    };
-  }, [id]);
+  }, [id, activeTab]);
 
   const handleExportPDF = () => {
     if (!patient) return;
@@ -114,7 +125,24 @@ export default function PatientDetails() {
 
     try {
       setUploading(true);
-      const storageRef = ref(storage, `exames/${id}/${Date.now()}_${file.name}`);
+      if (!tenantId) {
+        toast.error('Sessão inválida.');
+        setUploading(false);
+        return;
+      }
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf';
+      if (!isImage && !isPdf) {
+        toast.error('Apenas imagens ou PDF são permitidos.');
+        setUploading(false);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Arquivo excede 10MB.');
+        setUploading(false);
+        return;
+      }
+      const storageRef = ref(storage, `pacientes/${tenantId}/${id}/${Date.now()}_${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on(
@@ -197,7 +225,7 @@ export default function PatientDetails() {
         </div>
       </header>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
         <TabsList className="bg-white/40 backdrop-blur-md p-1 rounded-xl w-full max-w-2xl border border-white/20">
           <TabsTrigger value="overview" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Visão Geral</TabsTrigger>
           <TabsTrigger value="consultations" className="flex-1 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Consultas ({consultations.length})</TabsTrigger>

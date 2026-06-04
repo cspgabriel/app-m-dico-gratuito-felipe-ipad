@@ -18,6 +18,10 @@ service cloud.firestore {
       return isSignedIn() && (request.auth.uid == tenantId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId);
     }
 
+    function withinQueryLimit() {
+      return request.query.limit <= 200;
+    }
+
     // USERS
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
@@ -45,7 +49,8 @@ service cloud.firestore {
     // PACIENTES
     match /pacientes/{pacienteId} {
       allow create: if isSignedIn() && isValidPaciente(incoming()) && isValidId(pacienteId);
-      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && withinQueryLimit();
       allow update: if isSignedIn() && 
                       existing().userId == request.auth.uid && 
                       isValidPaciente(incoming()) &&
@@ -71,7 +76,8 @@ service cloud.firestore {
     // AGENDAMENTOS
     match /agendamentos/{agendaId} {
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && withinQueryLimit();
       allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
@@ -100,12 +106,19 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Collection Group Queries
+    // Collection Group Queries (tenant-isolated + bounded)
     match /{path=**}/consultas/{id} {
-      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && withinQueryLimit();
     }
     match /{path=**}/anamneses/{id} {
-      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && withinQueryLimit();
+    }
+
+    // STATS agregados por tenant
+    match /users/{tenantId}/stats/{statId} {
+      allow read, write: if isSignedIn() && request.auth.uid == tenantId;
     }
   }
 }

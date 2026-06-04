@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { BarChart as BarChartIcon, Activity, Users, FileText, Calendar } from 'lucide-react';
-import { collection, query, where, getDocs, collectionGroup } from 'firebase/firestore';
+import { collection, query, where, getDocs, collectionGroup, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -22,9 +22,9 @@ export default function ReportsPage() {
 
     const fetchData = async () => {
       try {
-        const patientsSnap = await getDocs(query(collection(db, 'pacientes'), where('userId', '==', tenantId)));
-        const consSnap = await getDocs(query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId)));
-        const anamSnap = await getDocs(query(collectionGroup(db, 'anamneses'), where('userId', '==', tenantId)));
+        const patientsSnap = await getDocs(query(collection(db, 'pacientes'), where('userId', '==', tenantId), orderBy('createdAt', 'desc'), limit(200)));
+        const consSnap = await getDocs(query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId), orderBy('data', 'desc'), limit(200)));
+        const anamSnap = await getDocs(query(collectionGroup(db, 'anamneses'), where('userId', '==', tenantId), orderBy('createdAt', 'desc'), limit(200)));
         
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

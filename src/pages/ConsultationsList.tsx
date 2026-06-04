@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, orderBy, collectionGroup } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, collectionGroup, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Consulta, Paciente } from '../types';
@@ -21,10 +21,14 @@ export default function ConsultationsList() {
 
   useEffect(() => {
     if (!tenantId) return;
-    const q = query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId));
+    const q = query(
+      collectionGroup(db, 'consultas'),
+      where('userId', '==', tenantId),
+      orderBy('data', 'desc'),
+      limit(50)
+    );
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Consulta));
-      data.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
       setConsultations(data);
     });
     return unsub;
@@ -32,7 +36,12 @@ export default function ConsultationsList() {
 
   useEffect(() => {
     if (!tenantId) return;
-    const q = query(collection(db, 'pacientes'), where('userId', '==', tenantId));
+    const q = query(
+      collection(db, 'pacientes'),
+      where('userId', '==', tenantId),
+      orderBy('nome'),
+      limit(200)
+    );
     const unsub = onSnapshot(q, (snapshot) => {
       const patsMap: Record<string, string> = {};
       const patsList: {id: string, nome: string}[] = [];
