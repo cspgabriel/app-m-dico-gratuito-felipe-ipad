@@ -1,124 +1,159 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     // Default Deny
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Helper Primitives
-    function isSignedIn() { return request.auth != null; }
-    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    // Helper Functions
+    function isSignedIn()  { return request.auth != null; }
+    function isVerified()  { return isSignedIn() && request.auth.token.email_verified == true; }
+    function incoming()    { return request.resource.data; }
+    function existing()    { return resource.data; }
 
-    function isTenantUser(tenantId) {
-      return isSignedIn() && (request.auth.uid == tenantId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId);
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    function withinQueryLimit() {
-      return request.query.limit <= 200;
+    // Valida campos obrigatorios do paciente
+    function isValidPaciente(data) {
+      return data.keys().hasAll(['nome', 'userId', 'createdAt', 'updatedAt'])
+          && data.nome is string
+          && data.nome.size() > 0
+          && data.nome.size() <= 200
+          && data.userId == request.auth.uid
+          && data.createdAt is string
+          && data.updatedAt is string;
+    }
+
+    // Tenant helper — prefere custom claims (sem leitura extra) com fallback para Firestore
+    function isTenantUser(tenantId) {
+      return isVerified() && (
+        request.auth.uid == tenantId
+        || (request.auth.token.keys().hasAny(['tenantId'])
+            && request.auth.token.tenantId == tenantId)
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
+      );
+    }
+
+    function isTenantAdmin(tenantId) {
+      return isVerified() && (
+        request.auth.uid == tenantId
+        || (isTenantUser(tenantId)
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
     // USERS
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
-      allow list: if isSignedIn() && isTenantUser(resource.data.tenantId);
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
+      allow get:    if isVerified() && (request.auth.uid == userId || isTenantUser(existing().tenantId));
+      allow list:   if isVerified() && isTenantUser(resource.data.tenantId);
+      allow create: if isVerified() && request.auth.uid == userId;
+      // Somente o proprio usuario OU admin do tenant (sem poder alterar tenantId/email de outros)
+      allow update: if isVerified() && (
+        request.auth.uid == userId
+        || (isTenantAdmin(existing().tenantId)
+            && !incoming().diff(existing()).changedKeys().hasAny(['email', 'tenantId']))
+      );
+      allow delete: if false;
     }
 
-    // INVITES
+    // INVITES — somente admin cria/gerencia
     match /invites/{inviteId} {
-      allow create: if isTenantUser(incoming().tenantId);
-      allow read, update, delete: if isTenantUser(resource.data.tenantId);
-    }
-
-
-    // Paciente Validation
-    function isValidPaciente(data) {
-      return data.keys().hasAll(['nome', 'userId', 'createdAt', 'updatedAt']) &&
-             data.nome is string && data.nome.size() <= 200 &&
-             data.userId == request.auth.uid &&
-             data.createdAt is string &&
-             data.updatedAt is string;
+      allow create:             if isTenantAdmin(incoming().tenantId);
+      allow read, update, delete: if isTenantAdmin(resource.data.tenantId);
     }
 
     // PACIENTES
     match /pacientes/{pacienteId} {
-      allow create: if isSignedIn() && isValidPaciente(incoming()) && isValidId(pacienteId);
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      allow list: if isSignedIn() && withinQueryLimit();
-      allow update: if isSignedIn() && 
-                      existing().userId == request.auth.uid && 
-                      isValidPaciente(incoming()) &&
-                      incoming().userId == existing().userId &&
-                      incoming().createdAt == existing().createdAt;
-      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isVerified()
+                    && isValidPaciente(incoming())
+                    && isValidId(pacienteId)
+                    && incoming().userId == request.auth.uid;
 
-      // SUBCOLLECTIONS (Anamneses, Consultas, Prescricoes)
+      allow get, list: if isVerified() && existing().userId == request.auth.uid;
+
+      allow update: if isVerified()
+                    && existing().userId == request.auth.uid
+                    && isValidPaciente(incoming())
+                    && incoming().userId == existing().userId
+                    && incoming().createdAt == existing().createdAt;
+
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+
+      // Sub-colecoes do prontuario (requerem email verificado)
       match /anamneses/{id} {
-        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
+        allow read, write: if isVerified()
+          && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
       match /consultas/{id} {
-        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
+        allow read, write: if isVerified()
+          && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
       match /prescricoes/{id} {
-        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
+        allow read, write: if isVerified()
+          && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
       match /exames/{id} {
-        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
+        allow read, write: if isVerified()
+          && get(/databases/$(database)/documents/pacientes/$(pacienteId)).data.userId == request.auth.uid;
       }
     }
-    
+
     // AGENDAMENTOS
     match /agendamentos/{agendaId} {
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      allow list: if isSignedIn() && withinQueryLimit();
-      allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create:         if isVerified() && incoming().userId == request.auth.uid;
+      allow get, list:      if isVerified() && existing().userId == request.auth.uid;
+      allow update, delete: if isVerified() && existing().userId == request.auth.uid;
     }
 
-    // RECIBOS — recibos médicos emitidos
+    // RECIBOS
     match /recibos/{reciboId} {
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create:         if isVerified() && incoming().userId == request.auth.uid;
+      allow get, list:      if isVerified() && existing().userId == request.auth.uid;
+      allow update, delete: if isVerified() && existing().userId == request.auth.uid;
     }
 
-    // GUIAS TISS/TUSS — guia operacional vinculada a consulta e paciente
+    // GUIAS TISS/TUSS
     match /guias/{guiaId} {
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow get, list: if isSignedIn() && existing().userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create:         if isVerified() && incoming().userId == request.auth.uid;
+      allow get, list:      if isVerified() && existing().userId == request.auth.uid;
+      allow update, delete: if isVerified() && existing().userId == request.auth.uid;
     }
 
-    // SUBSCRIPTIONS — owner can read, can self-bootstrap a free plan;
-    // paid status transitions happen via Admin SDK (webhook), which bypasses these rules.
+    // SUBSCRIPTIONS
+    // update/delete = false — somente Admin SDK (webhook MP) pode modificar
     match /subscriptions/{userId} {
-      allow get: if isSignedIn() && request.auth.uid == userId;
-      allow create: if isSignedIn() && request.auth.uid == userId
+      allow get: if isVerified() && request.auth.uid == userId;
+      allow create: if isVerified()
+                    && request.auth.uid == userId
                     && incoming().status == 'free'
                     && incoming().plan == 'basico'
-                    && incoming().amount == 0;
+                    && incoming().amount == 0
+                    && incoming().userId == userId
+                    && incoming().keys().hasOnly([
+                         'status', 'plan', 'amount', 'userId', 'createdAt', 'updatedAt'
+                       ]);
       allow update, delete: if false;
     }
 
-    // Collection Group Queries (tenant-isolated + bounded)
-    match /{path=**}/consultas/{id} {
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && withinQueryLimit();
-    }
-    match /{path=**}/anamneses/{id} {
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && withinQueryLimit();
+    // AUDIT LOGS (CFM 1.821/2007 — prontuario eletronico)
+    // Client so escreve; leitura somente via Admin SDK/backend
+    match /audit_logs/{logId} {
+      allow create: if isVerified()
+                    && incoming().userId == request.auth.uid
+                    && incoming().keys().hasAll(['userId', 'action', 'resourceType', 'resourceId', 'timestamp']);
+      allow read, update, delete: if false;
     }
 
-    // STATS agregados por tenant
-    match /users/{tenantId}/stats/{statId} {
-      allow read, write: if isSignedIn() && request.auth.uid == tenantId;
+    // Collection Group Queries
+    match /{path=**}/consultas/{id} {
+      allow list, get: if isVerified() && resource.data.userId == request.auth.uid;
+    }
+    match /{path=**}/anamneses/{id} {
+      allow list, get: if isVerified() && resource.data.userId == request.auth.uid;
     }
   }
 }

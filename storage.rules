@@ -3,33 +3,32 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // ---------- Helpers ----------
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(uid)  { return isSignedIn() && request.auth.uid == uid; }
-    function isImage()     { return request.resource.contentType.matches('image/.*'); }
-    function isPdf()       { return request.resource.contentType == 'application/pdf'; }
-    function maxSize(mb)   { return request.resource.size < mb * 1024 * 1024; }
-
-    // ---------- Default Deny ----------
+    // Default Deny
     match /{allPaths=**} {
       allow read, write: if false;
     }
 
-    // ---------- Logo da clínica / branding ----------
-    // Caminho usado pelo OnboardingPage:  tenants/{uid}/logo-...
-    match /tenants/{uid}/{allPaths=**} {
-      allow read: if true;                                       // logo público (aparece em PDFs/landing)
-      allow write: if isOwner(uid) && isImage() && maxSize(2);   // só o dono pode subir, até 2MB, só imagem
-    }
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isOwner(uid) { return isVerified() && request.auth.uid == uid; }
+    function isImage()    { return request.resource.contentType.matches('image/.*'); }
+    function isPdf()      { return request.resource.contentType == 'application/pdf'; }
+    function maxSize(mb)  { return request.resource.size < mb * 1024 * 1024; }
 
-    // ---------- Avatares de usuários ----------
-    match /users/{uid}/avatar/{fileName} {
-      allow read: if isSignedIn();
+    // Logo da clinica — leitura autenticada (aparece em PDFs/landing)
+    // FIX: era read:true (publico) — alterado para isSignedIn()
+    match /tenants/{uid}/{allPaths=**} {
+      allow read:  if isSignedIn();
       allow write: if isOwner(uid) && isImage() && maxSize(2);
     }
 
-    // ---------- Exames / Documentos do paciente ----------
-    // Estrutura: pacientes/{uid_do_tenant}/{pacienteId}/{arquivo}
+    // Avatares de usuarios
+    match /users/{uid}/avatar/{fileName} {
+      allow read:  if isSignedIn();
+      allow write: if isOwner(uid) && isImage() && maxSize(2);
+    }
+
+    // Exames e documentos do paciente — somente medico dono
     match /pacientes/{uid}/{pacienteId}/{fileName} {
       allow read:   if isOwner(uid);
       allow create: if isOwner(uid) && (isImage() || isPdf()) && maxSize(10);
@@ -37,10 +36,10 @@ service firebase.storage {
       allow delete: if isOwner(uid);
     }
 
-    // ---------- Anexos gerais por usuário ----------
+    // Uploads gerais por usuario
     match /uploads/{uid}/{allPaths=**} {
-      allow read:   if isOwner(uid);
-      allow write:  if isOwner(uid) && maxSize(10);
+      allow read:  if isOwner(uid);
+      allow write: if isOwner(uid) && maxSize(10);
     }
   }
 }
