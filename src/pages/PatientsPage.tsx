@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, addDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, addDoc, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { useAuth } from '../components/FirebaseProvider';
 import { Paciente } from '../types';
@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
 import { usePlan, checkPatientLimit } from '../lib/entitlements';
+import { bumpStat } from '../lib/stats';
 
 export default function PatientsPage() {
   const { user, tenantId } = useAuth();
@@ -42,12 +43,13 @@ export default function PatientsPage() {
 
     const q = query(
       collection(db, 'pacientes'),
-      where('userId', '==', tenantId)
+      where('userId', '==', tenantId),
+      orderBy('nome'),
+      limit(200)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paciente));
-      data.sort((a, b) => a.nome.localeCompare(b.nome));
       setPatients(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'pacientes');
@@ -93,6 +95,7 @@ export default function PatientsPage() {
         createdAt: now,
         updatedAt: now,
       });
+      if (tenantId) await bumpStat(tenantId, 'patients', 1);
       toast.success('Paciente cadastrado com sucesso!');
       setIsModalOpen(false);
       setNewName('');

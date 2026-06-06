@@ -21,6 +21,8 @@ import {
   collectionGroup,
   doc,
   onSnapshot,
+  orderBy,
+  limit,
   query,
   updateDoc,
   where,
@@ -178,18 +180,38 @@ export default function AgendaPage() {
   // Subscribe patients
   useEffect(() => {
     if (!tenantId) return;
-    const q = query(collection(db, 'pacientes'), where('userId', '==', tenantId));
+    const q = query(
+      collection(db, 'pacientes'),
+      where('userId', '==', tenantId),
+      orderBy('nome'),
+      limit(200)
+    );
     return onSnapshot(q, (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, nome: (d.data() as any).nome }));
-      list.sort((a, b) => a.nome.localeCompare(b.nome));
       setPatients(list);
     });
   }, [tenantId]);
 
-  // Subscribe agendamentos
+  const windowStart = useMemo(
+    () => new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString(),
+    [currentDate]
+  );
+  const windowEnd = useMemo(
+    () => new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 1).toISOString(),
+    [currentDate]
+  );
+
+  // Subscribe agendamentos (janela de ~3 meses ao redor de currentDate)
   useEffect(() => {
     if (!tenantId) return;
-    const q = query(collection(db, 'agendamentos'), where('userId', '==', tenantId));
+    const q = query(
+      collection(db, 'agendamentos'),
+      where('userId', '==', tenantId),
+      where('data', '>=', windowStart),
+      where('data', '<', windowEnd),
+      orderBy('data', 'asc'),
+      limit(200)
+    );
     return onSnapshot(
       q,
       (snap) => {
@@ -197,12 +219,19 @@ export default function AgendaPage() {
       },
       (err) => console.error('agendamentos', err)
     );
-  }, [tenantId]);
+  }, [tenantId, windowStart, windowEnd]);
 
-  // Subscribe consultas (for showing past/today's done visits on the agenda)
+  // Subscribe consultas (janela de ~3 meses ao redor de currentDate)
   useEffect(() => {
     if (!tenantId) return;
-    const q = query(collectionGroup(db, 'consultas'), where('userId', '==', tenantId));
+    const q = query(
+      collectionGroup(db, 'consultas'),
+      where('userId', '==', tenantId),
+      where('data', '>=', windowStart),
+      where('data', '<', windowEnd),
+      orderBy('data', 'asc'),
+      limit(200)
+    );
     return onSnapshot(
       q,
       (snap) => {
@@ -210,7 +239,7 @@ export default function AgendaPage() {
       },
       (err) => console.error('consultas', err)
     );
-  }, [tenantId]);
+  }, [tenantId, windowStart, windowEnd]);
 
   const patientName = (id: string) =>
     patients.find((p) => p.id === id)?.nome || 'Paciente removido';
