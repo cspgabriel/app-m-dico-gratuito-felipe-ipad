@@ -57,9 +57,8 @@ function getAppUrl(req: express.Request): string {
   return process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+export const app = express();
+const PORT = Number(process.env.PORT) || 3000;
 
   // Webhook needs raw body for signature verification — register BEFORE express.json
   app.post("/api/billing/webhook", express.raw({ type: "*/*" }), async (req, res) => {
@@ -843,25 +842,29 @@ async function startServer() {
     }
   });
 
-  // Vite middleware setup
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+  // Vite/Listen setup - skip when running on Vercel
+  if (!process.env.VERCEL) {
+    if (process.env.NODE_ENV !== "production") {
+      createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      }).then((vite) => {
+        app.use(vite.middlewares);
+        app.listen(PORT, "0.0.0.0", () => {
+          console.log(`Dev server running on http://localhost:${PORT}`);
+        });
+      });
+    } else {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (_req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Prod server running on http://localhost:${PORT}`);
+      });
+    }
   }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`  Mercado Pago: ${mpClient ? "ENABLED" : "DISABLED"}`);
-  });
 }
 
 function mapPreapprovalStatus(s?: string): string {
@@ -881,4 +884,3 @@ function inferPlanFromReason(reason: string): string {
   return "basico";
 }
 
-startServer();
