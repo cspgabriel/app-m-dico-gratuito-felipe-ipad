@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && tsx scripts/generate-seo-html.ts",
+    "build": "prisma generate && vite build && tsx scripts/generate-seo-html.ts",
     "clean": "rm -rf dist .vercel/output",
     "lint": "tsc --noEmit"
   },
