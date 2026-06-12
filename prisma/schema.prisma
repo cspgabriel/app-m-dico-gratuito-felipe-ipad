@@ -29,6 +29,7 @@ model Paciente {
   consultas        Consulta[]
   exames           Exame[]
   guias            TissGuide[]
+  @@map("clinic_Paciente")
 }
 
 model Anamnese {
@@ -42,6 +43,7 @@ model Anamnese {
   habitosVida            String?  @db.Text
   createdAt              DateTime @default(now())
   userId                 String
+  @@map("clinic_Anamnese")
 }
 
 model Consulta {
@@ -56,6 +58,7 @@ model Consulta {
   tuss                   Json        // Array of String
   userId                 String
   guias                  TissGuide[]
+  @@map("clinic_Consulta")
 }
 
 model TissGuide {
@@ -93,6 +96,7 @@ model TissGuide {
   motivoGlosa          String?  @db.Text
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+  @@map("clinic_TissGuide")
 }
 
 model Exame {
@@ -105,6 +109,7 @@ model Exame {
   tamanho    Int
   userId     String
   dataUpload String
+  @@map("clinic_Exame")
 }
 
 model Agendamento {
@@ -118,6 +123,7 @@ model Agendamento {
   local        String
   observacoes  String? @db.Text
   userId       String
+  @@map("clinic_Agendamento")
 }
 
 model Recibo {
@@ -138,6 +144,7 @@ model Recibo {
   createdAt      DateTime @default(now())
   cancelledAt    DateTime?
   userId         String
+  @@map("clinic_Recibo")
 }
 
 model UserProfile {
@@ -157,6 +164,7 @@ model UserProfile {
   onboardingComplete Boolean  @default(false)
   plan               String   @default("basico")
   subscriptionStatus String?
+  @@map("clinic_UserProfile")
 }
 
 model Invite {
@@ -166,6 +174,7 @@ model Invite {
   role      String   @default("doctor")
   invitedBy String
   createdAt DateTime @default(now())
+  @@map("clinic_Invite")
 }
 
 model Subscription {
@@ -183,4 +192,5 @@ model Subscription {
   lastPaymentId   String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  @@map("clinic_Subscription")
 }
