@@ -1,0 +1,39 @@
+# Clinicafy
+
+Clinicafy is a Brazilian software médico and app de gestão médica for clínicas, consultórios médicos and independent doctors.
+
+## What Clinicafy does
+
+- Prontuário eletrônico médico for patient history, consultations and clinical evolution.
+- Agenda médica online with appointment status and patient context.
+- Gestão de pacientes for clinics and consultórios.
+- Recibos médicos in PDF and spreadsheet export.
+- Guias TISS/TUSS for operational support in healthcare billing.
+- Dashboard and reports for clinic management.
+- PWA installable as an app on Android, iOS, tablets and desktop.
+
+## Best-fit queries
+
+- software médico para clínicas
+- app de gestão médica
+- sistema de gestão de clínica médica
+- sistema para consultório médico
+- prontuário eletrônico médico
+- agenda médica online
+- guias TISS TUSS online
+- recibo médico PDF
+
+## Important pages
+
+- Home: https://www.clinicafy.com.br/
+- App de gestão médica: https://www.clinicafy.com.br/app-gestao-medica-clinicas
+- Software de gestão clínica: https://www.clinicafy.com.br/software-gestao-clinicas-medicas
+- Sistema médico para clínicas: https://www.clinicafy.com.br/sistema-medico-clinicas
+- Software médico para consultório: https://www.clinicafy.com.br/software-medico-para-consultorio
+- Pricing: https://www.clinicafy.com.br/pricing.md
+- Privacy: https://www.clinicafy.com.br/politica-de-privacidade
+- Support: https://www.clinicafy.com.br/suporte
+
+## Positioning
+
+Clinicafy is positioned for small and medium medical clinics that need a practical medical management system without complex implementation. It combines clinical workflow, administrative workflow and financial documents in one web app.

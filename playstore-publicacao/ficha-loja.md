@@ -12,48 +12,48 @@
 
 ## Título (máx 30 caracteres)
 ```
-Clinicafy: Gestão de Clínica
+Clinicafy: Gestão Médica
 ```
-(28 caracteres)
+(26 caracteres)
 
 ---
 
 ## Descrição curta (máx 80 caracteres)
 ```
-Prontuário, agenda, recibos e guias TISS para consultórios e clínicas médicas.
+App de gestão médica com prontuário, agenda, recibos e guias TISS/TUSS.
 ```
-(78 caracteres)
+(76 caracteres)
 
 ---
 
 ## Descrição completa (máx 4000 caracteres)
 ```
-O Clinicafy é o sistema de gestão para médicos e clínicas que querem profissionalizar o atendimento sem complicação e sem mensalidade abusiva.
+O Clinicafy é um software médico e app de gestão médica para clínicas e consultórios que querem organizar atendimento, pacientes, agenda e documentos em uma plataforma simples.
 
-Tudo o que o seu consultório precisa:
+Use o Clinicafy como sistema de gestão de clínica médica para centralizar a rotina da equipe e reduzir retrabalho administrativo.
 
-• PRONTUÁRIO ELETRÔNICO
+• PRONTUÁRIO ELETRÔNICO MÉDICO
 Registre consultas, histórico clínico, anotações e a evolução de cada paciente em um só lugar, com segurança.
 
-• AGENDA INTELIGENTE
+• AGENDA MÉDICA ONLINE
 Organize seus horários, controle o status das consultas (realizada, cancelada, remarcada, faltou) e nunca perca um retorno.
 
-• RECIBOS
+• RECIBOS MÉDICOS
 Emita recibos com CPF, endereço e forma de pagamento. Exporte em PDF individual ou consolidado e em planilha.
 
 • GUIAS TISS/TUSS
 Gere guias com operadora, registro ANS, plano, carteirinha, CID e código TUSS vinculadas ao paciente e à consulta. Exporte em PDF e CSV.
 
-• GESTÃO DE PACIENTES
+• GESTÃO DE PACIENTES E CLÍNICAS
 Cadastro completo com dados de convênio, pronto para as guias e para o faturamento.
 
-• RELATÓRIOS
-Acompanhe os indicadores do consultório e a sua rotina de atendimentos.
+• RELATÓRIOS DA CLÍNICA
+Acompanhe indicadores do consultório, atendimentos e rotina operacional.
 
 COMECE GRÁTIS
-O plano Básico é gratuito e já inclui guias TISS/TUSS. Faça upgrade para Profissional (pacientes ilimitados) ou Vitalício (pagamento único, sem mensalidade, com WhatsApp e e-mail marketing integrados).
+O plano Básico é gratuito. Faça upgrade para Profissional ou Vitalício quando precisar de pacientes ilimitados, relatórios, recibos em PDF e recursos avançados de gestão.
 
-Feito para médicos autônomos, consultórios e clínicas que querem organização real, em conformidade com a LGPD.
+Feito para médicos autônomos, consultórios e clínicas médicas que procuram um app de gestão médica, software médico online, prontuário eletrônico, agenda médica e controle de documentos em conformidade com a LGPD.
 
 Acesse também pelo navegador em www.clinicafy.com.br
 ```
@@ -83,4 +83,4 @@ https://www.clinicafy.com.br
 ---
 
 ## Tags / Palavras-chave
-prontuário eletrônico, gestão de clínica, agenda médica, TISS, recibos médicos, sistema médico, consultório, clínica, saúde
+software médico, app gestão médica, gestão médica, sistema para clínicas, gestão de clínica médica, prontuário eletrônico, agenda médica, TISS, TUSS, recibos médicos, consultório médico, sistema médico online

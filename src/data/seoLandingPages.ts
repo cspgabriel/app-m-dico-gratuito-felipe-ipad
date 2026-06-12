@@ -16,6 +16,32 @@ export const SEO_BASE_URL = 'https://www.clinicafy.com.br';
 
 export const seoLandingPages: SeoLandingPage[] = [
   {
+    slug: 'app-gestao-medica-clinicas',
+    keyword: 'app de gestão médica para clínicas',
+    title: 'App de gestão médica para clínicas | Clinicafy',
+    description: 'App de gestão médica para clínicas com prontuário eletrônico, agenda médica, pacientes, recibos, guias TISS/TUSS e relatórios.',
+    eyebrow: 'App de gestão médica',
+    h1: 'App de gestão médica para clínicas que precisam organizar atendimento e operação.',
+    lead: 'O Clinicafy funciona como PWA instalável e reúne prontuário eletrônico, agenda médica, recibos, guias TISS/TUSS, pacientes e relatórios em uma rotina simples para clínicas.',
+    audience: 'Para médicos, recepções e gestores que querem acessar a clínica pelo navegador, celular, tablet ou computador.',
+    pains: ['Dados clínicos espalhados', 'Agenda médica sem integração', 'Gestão financeira fora do prontuário'],
+    features: ['PWA instalável como app', 'Prontuário eletrônico e pacientes', 'Agenda, recibos e guias TISS/TUSS'],
+    outcomes: ['Mais mobilidade para a equipe', 'Rotina clínica centralizada', 'Menos retrabalho administrativo'],
+  },
+  {
+    slug: 'software-gestao-clinicas-medicas',
+    keyword: 'software de gestão para clínicas médicas',
+    title: 'Software de gestão para clínicas médicas | Clinicafy',
+    description: 'Software de gestão para clínicas médicas com prontuário, agenda, faturamento, recibos, guias TISS/TUSS, equipe e indicadores.',
+    eyebrow: 'Software de gestão clínica',
+    h1: 'Software de gestão para clínicas médicas com visão completa da operação.',
+    lead: 'O Clinicafy combina gestão clínica e administrativa para organizar pacientes, atendimentos, documentos, indicadores e faturamento no mesmo sistema médico.',
+    audience: 'Para clínicas médicas pequenas e médias que querem substituir planilhas, papel e ferramentas desconectadas.',
+    pains: ['Falta de indicadores da clínica', 'Processos manuais na recepção', 'Documentos clínicos e financeiros separados'],
+    features: ['Dashboard e relatórios', 'Gestão de equipe e pacientes', 'Recibos e guias TISS/TUSS'],
+    outcomes: ['Decisão com dados', 'Fluxo operacional mais claro', 'Base profissional para crescer'],
+  },
+  {
     slug: 'sistema-medico-clinicas',
     keyword: 'sistema médico para clínicas',
     title: 'Sistema médico para clínicas | Clinicafy',
