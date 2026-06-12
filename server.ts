@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { createRequire } from "module";
 import { createServer as createViteServer } from "vite";
 import cors from "cors";
 import helmet from "helmet";
@@ -7,8 +8,10 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import { MercadoPagoConfig, Preference, PreApproval, Payment } from "mercadopago";
 import admin from "firebase-admin";
-import firebaseConfig from "./firebase-applet-config.json";
-import { prisma } from "./src/lib/prisma";
+import { prisma } from "./src/lib/prisma.js";
+
+const require = createRequire(import.meta.url);
+const firebaseConfig = require("./firebase-applet-config.json");
 
 dotenv.config();
 
@@ -865,7 +868,6 @@ const PORT = Number(process.env.PORT) || 3000;
       });
     }
   }
-}
 
 function mapPreapprovalStatus(s?: string): string {
   switch (s) {
