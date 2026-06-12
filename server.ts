@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import { createRequire } from "module";
-import { createServer as createViteServer } from "vite";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
@@ -848,10 +847,10 @@ const PORT = Number(process.env.PORT) || 3000;
   // Vite/Listen setup - skip when running on Vercel
   if (!process.env.VERCEL) {
     if (process.env.NODE_ENV !== "production") {
-      createViteServer({
+      import("vite").then(({ createServer: createViteServer }) => createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
-      }).then((vite) => {
+      })).then((vite) => {
         app.use(vite.middlewares);
         app.listen(PORT, "0.0.0.0", () => {
           console.log(`Dev server running on http://localhost:${PORT}`);
