@@ -347,3 +347,17 @@ export function initializeFirestore(app: any, settings?: any, databaseId?: strin
 export function getFirestore(app?: any, databaseId?: string) {
   return { type: 'db' };
 }
+
+export function persistentLocalCache(options?: any) {
+  return { type: 'persistentLocalCache', options };
+}
+
+export function persistentMultipleTabManager() {
+  return { type: 'persistentMultipleTabManager' };
+}
+
+export function increment(n: number) {
+  return { type: 'increment', value: n };
+}
+
+
