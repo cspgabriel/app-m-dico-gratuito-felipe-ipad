@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.clinicafy.app",
+      "sha256_cert_fingerprints": [
+        "A6:78:B2:8E:B2:52:29:EF:44:8D:90:C4:E5:37:BB:7F:09:D5:62:9C:B0:1E:9C:43:36:C9:19:04:66:95:D2:58"
+      ]
+    }
+  }
+]
