@@ -1,0 +1,186 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Paciente {
+  id               String      @id @default(uuid())
+  nome             String
+  cpf              String?
+  telefone         String?
+  nascimento       String?
+  sexo             String?
+  convenio         String?
+  registroAns      String?
+  planoSaude       String?
+  numeroCarteira   String?
+  validadeCarteira String?
+  alergias         String?     @db.Text
+  medicacoes       String?     @db.Text
+  historico        String?     @db.Text
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  userId           String      // tenantId
+  anamneses        Anamnese[]
+  consultas        Consulta[]
+  exames           Exame[]
+  guias            TissGuide[]
+}
+
+model Anamnese {
+  id                     String   @id @default(uuid())
+  pacienteId             String
+  paciente               Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  queixaPrincipal        String   @db.Text
+  hda                    String   @db.Text
+  antecedentesPessoais   String?  @db.Text
+  antecedentesFamiliares String?  @db.Text
+  habitosVida            String?  @db.Text
+  createdAt              DateTime @default(now())
+  userId                 String
+}
+
+model Consulta {
+  id                     String      @id @default(uuid())
+  pacienteId             String
+  paciente               Paciente    @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  data                   String
+  queixa                 String      @db.Text
+  exameFisico            String      @db.Text
+  conduta                String      @db.Text
+  cid10                  Json        // Array of String
+  tuss                   Json        // Array of String
+  userId                 String
+  guias                  TissGuide[]
+}
+
+model TissGuide {
+  id                   String   @id @default(uuid())
+  userId               String
+  pacienteId           String
+  paciente             Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  consultaId           String
+  consulta             Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+  tipoGuia             String   // consulta, sp_sadt, honorario
+  status               String   // draft, authorized, submitted, paid, glossed, cancelled
+  numeroGuia           String
+  numeroGuiaOperadora  String?
+  numeroGuiaPrincipal  String?
+  operadora            String
+  registroAns          String?
+  planoSaude           String?
+  numeroCarteira       String?
+  validadeCarteira     String?
+  pacienteNome         String
+  pacienteCpf          String?
+  dataAtendimento      String
+  cid10                Json     // Array of String
+  tuss                 Json     // Array of String
+  indicacaoClinica     String?  @db.Text
+  conduta              String?  @db.Text
+  caraterAtendimento   String?  // eletivo, urgencia
+  tipoConsulta         String?  // primeira, seguimento, pre_natal, referencia
+  senhaAutorizacao     String?
+  dataAutorizacao      String?
+  validadeSenha        String?
+  valorTotal           Float?
+  loteId               String?
+  protocolo            String?
+  motivoGlosa          String?  @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Exame {
+  id         String   @id @default(uuid())
+  pacienteId String
+  paciente   Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  nome       String
+  url        String   @db.Text
+  tipo       String
+  tamanho    Int
+  userId     String
+  dataUpload String
+}
+
+model Agendamento {
+  id           String  @id @default(uuid())
+  pacienteId   String?
+  pacienteNome String?
+  data         String
+  duracao      Int
+  tipo         String
+  status       String  // confirmado, pendente, cancelado
+  local        String
+  observacoes  String? @db.Text
+  userId       String
+}
+
+model Recibo {
+  id             String   @id @default(uuid())
+  pacienteId     String?
+  pacienteNome   String?
+  numero         String
+  data           String
+  valor          Float
+  servico        String
+  prestador      Json     // prestador object
+  tomador        Json     // tomador object
+  formaPagamento String?
+  observacoes    String?  @db.Text
+  retencaoINSS   Float?
+  retencaoIR     Float?
+  status         String   @default("issued") // issued, cancelled
+  createdAt      DateTime @default(now())
+  cancelledAt    DateTime?
+  userId         String
+}
+
+model UserProfile {
+  uid                String   @id // matches Firebase Auth uid
+  name               String
+  title              String?
+  crn                String?  // or crm
+  clinicName         String?
+  logoUrl            String?  @db.Text
+  slug               String?  @unique
+  bio                String?  @db.Text
+  whatsapp           String?
+  instagram          String?
+  geminiApiKey       String?  @db.Text
+  role               String   @default("doctor")
+  tenantId           String
+  onboardingComplete Boolean  @default(false)
+  plan               String   @default("basico")
+  subscriptionStatus String?
+}
+
+model Invite {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  tenantId  String
+  role      String   @default("doctor")
+  invitedBy String
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  userId          String    @id
+  mpPreapprovalId String?
+  mpPreferenceId  String?
+  mpInitPoint     String?   @db.Text
+  status          String
+  plan            String
+  amount          Float
+  currency        String    @default("BRL")
+  payerEmail      String?
+  nextPaymentDate String?
+  lastPaymentDate String?
+  lastPaymentId   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}

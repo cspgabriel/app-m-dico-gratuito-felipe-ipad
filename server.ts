@@ -7,8 +7,8 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import { MercadoPagoConfig, Preference, PreApproval, Payment } from "mercadopago";
 import admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
 import firebaseConfig from "./firebase-applet-config.json";
+import { prisma } from "./src/lib/prisma";
 
 dotenv.config();
 
@@ -28,12 +28,6 @@ if (!admin.apps.length) {
     console.warn("[firebase-admin] Initialization failed — webhook/auth endpoints will be disabled:", (err as Error).message);
   }
 }
-
-const firestore = admin.apps.length
-  ? (firebaseConfig.firestoreDatabaseId
-      ? getFirestore(admin.app(), firebaseConfig.firestoreDatabaseId)
-      : getFirestore(admin.app()))
-  : null;
 
 // Mercado Pago client
 const mpAccessToken = process.env.MP_ACCESS_TOKEN || "";
@@ -70,14 +64,14 @@ async function startServer() {
   // Webhook needs raw body for signature verification — register BEFORE express.json
   app.post("/api/billing/webhook", express.raw({ type: "*/*" }), async (req, res) => {
     try {
-      if (!mpClient || !firestore) {
-        console.warn("[webhook] MP or Firestore not configured");
+      if (!mpClient) {
+        console.warn("[webhook] MP not configured");
         return res.status(200).send("ok");
       }
 
       const rawBody = (req.body as Buffer)?.toString("utf8") || "";
 
-      // Signature verification (x-signature header: ts=...,v1=...)
+      // Signature verification
       if (mpWebhookSecret) {
         const sig = (req.headers["x-signature"] as string) || "";
         const requestId = (req.headers["x-request-id"] as string) || "";
@@ -105,40 +99,87 @@ async function startServer() {
         const pa = await new PreApproval(mpClient).get({ id: String(id) });
         const userId = pa.external_reference;
         if (userId) {
-          await firestore.collection("subscriptions").doc(userId).set({
-            userId,
-            mpPreapprovalId: pa.id,
-            status: mapPreapprovalStatus(pa.status),
-            plan: pa.reason ? inferPlanFromReason(pa.reason) : undefined,
-            amount: pa.auto_recurring?.transaction_amount || 0,
-            currency: pa.auto_recurring?.currency_id || "BRL",
-            payerEmail: pa.payer_email,
-            nextPaymentDate: pa.next_payment_date,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          }, { merge: true });
-          await firestore.collection("users").doc(userId).set({
-            plan: inferPlanFromReason(pa.reason || ""),
-            subscriptionStatus: mapPreapprovalStatus(pa.status),
-          }, { merge: true });
+          const plan = pa.reason ? inferPlanFromReason(pa.reason) : "basico";
+          const status = mapPreapprovalStatus(pa.status);
+
+          await prisma.subscription.upsert({
+            where: { userId },
+            update: {
+              mpPreapprovalId: pa.id,
+              status,
+              plan,
+              amount: pa.auto_recurring?.transaction_amount || 0,
+              currency: pa.auto_recurring?.currency_id || "BRL",
+              payerEmail: pa.payer_email,
+              nextPaymentDate: pa.next_payment_date ? new Date(pa.next_payment_date).toISOString() : null,
+            },
+            create: {
+              userId,
+              mpPreapprovalId: pa.id,
+              status,
+              plan,
+              amount: pa.auto_recurring?.transaction_amount || 0,
+              currency: pa.auto_recurring?.currency_id || "BRL",
+              payerEmail: pa.payer_email,
+              nextPaymentDate: pa.next_payment_date ? new Date(pa.next_payment_date).toISOString() : null,
+            }
+          });
+
+          await prisma.userProfile.upsert({
+            where: { uid: userId },
+            update: { plan, subscriptionStatus: status },
+            create: {
+              uid: userId,
+              name: pa.payer_email || "Doutor",
+              plan,
+              subscriptionStatus: status,
+              tenantId: userId,
+              role: "doctor",
+              onboardingComplete: false
+            }
+          });
         }
       } else if (type === "payment") {
         const payment = await new Payment(mpClient).get({ id: String(id) });
         const userId = payment.external_reference;
         if (userId) {
           const status = payment.status === "approved" ? "active" : payment.status === "pending" ? "pending" : "failed";
-          const currentSub = await firestore.collection("subscriptions").doc(userId).get();
-          const selectedPlan = currentSub.data()?.plan || payment.metadata?.plan || "basico";
-          await firestore.collection("subscriptions").doc(userId).set({
-            userId,
-            plan: selectedPlan,
-            status,
-            lastPaymentDate: payment.date_approved || payment.date_created,
-            lastPaymentId: payment.id,
-            amount: payment.transaction_amount || 0,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          }, { merge: true });
+          const currentSub = await prisma.subscription.findUnique({ where: { userId } });
+          const selectedPlan = currentSub?.plan || payment.metadata?.plan || "basico";
+
+          await prisma.subscription.upsert({
+            where: { userId },
+            update: {
+              plan: selectedPlan,
+              status,
+              lastPaymentDate: payment.date_approved || payment.date_created,
+              lastPaymentId: String(payment.id),
+              amount: payment.transaction_amount || 0,
+            },
+            create: {
+              userId,
+              plan: selectedPlan,
+              status,
+              lastPaymentDate: payment.date_approved || payment.date_created,
+              lastPaymentId: String(payment.id),
+              amount: payment.transaction_amount || 0,
+            }
+          });
+
           if (status === "active") {
-            await firestore.collection("users").doc(userId).set({ plan: selectedPlan, subscriptionStatus: "active" }, { merge: true });
+            await prisma.userProfile.upsert({
+              where: { uid: userId },
+              update: { plan: selectedPlan, subscriptionStatus: "active" },
+              create: {
+                uid: userId,
+                name: payment.payer?.email || "Doutor",
+                plan: selectedPlan,
+                subscriptionStatus: "active",
+                tenantId: userId,
+                role: "doctor",
+                onboardingComplete: false
+              }
+            });
           }
         }
       }
@@ -146,17 +187,489 @@ async function startServer() {
       res.status(200).send("ok");
     } catch (err) {
       console.error("[webhook] error:", err);
-      res.status(200).send("ok"); // ack to avoid retries storm
+      res.status(200).send("ok");
     }
   });
 
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
   app.use(cors());
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-    })
-  );
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // ---------- API CRUD Endpoints ----------
+
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", service: "clinicafy-mysql" });
+  });
+
+  // UserProfile endpoints
+  app.get("/api/users/:uid", async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const profile = await prisma.userProfile.findUnique({ where: { uid } });
+      if (!profile) return res.status(404).json({ error: "Profile not found" });
+      res.json(profile);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/users/slug/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const profile = await prisma.userProfile.findFirst({
+        where: { slug, onboardingComplete: true }
+      });
+      if (!profile) return res.status(404).json({ error: "Profile not found" });
+      res.json(profile);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const { uid, name, title, crn, clinicName, logoUrl, slug, bio, whatsapp, instagram, geminiApiKey, role, tenantId, onboardingComplete, plan, subscriptionStatus } = req.body;
+      const profile = await prisma.userProfile.upsert({
+        where: { uid },
+        update: { name, title, crn, clinicName, logoUrl, slug, bio, whatsapp, instagram, geminiApiKey, role, tenantId, onboardingComplete, plan, subscriptionStatus },
+        create: { uid, name, title, crn, clinicName, logoUrl, slug, bio, whatsapp, instagram, geminiApiKey, role, tenantId, onboardingComplete, plan: plan || "basico", subscriptionStatus }
+      });
+      res.json(profile);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Pacientes endpoints
+  app.get("/api/pacientes", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const whereClause: any = {};
+      if (userId) whereClause.userId = String(userId);
+
+      const pacientes = await prisma.paciente.findMany({
+        where: whereClause,
+        orderBy: { nome: 'asc' }
+      });
+      res.json(pacientes);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/pacientes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const paciente = await prisma.paciente.findUnique({
+        where: { id },
+        include: {
+          anamneses: true,
+          consultas: true,
+          exames: true
+        }
+      });
+      if (!paciente) return res.status(404).json({ error: "Paciente not found" });
+      res.json(paciente);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/pacientes", async (req, res) => {
+    try {
+      const { id, nome, cpf, telefone, nascimento, sexo, convenio, registroAns, planoSaude, numeroCarteira, validadeCarteira, alergias, medicacoes, historico, userId } = req.body;
+      const data = { nome, cpf, telefone, nascimento, sexo, convenio, registroAns, planoSaude, numeroCarteira, validadeCarteira, alergias, medicacoes, historico, userId };
+      if (id) {
+        const paciente = await prisma.paciente.update({
+          where: { id },
+          data
+        });
+        res.json(paciente);
+      } else {
+        const paciente = await prisma.paciente.create({
+          data
+        });
+        res.json(paciente);
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/pacientes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.paciente.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Anamneses endpoints
+  app.get("/api/pacientes/:pacienteId/anamneses", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const anamneses = await prisma.anamnese.findMany({
+        where: { pacienteId },
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(anamneses);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/pacientes/:pacienteId/anamneses", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const { queixaPrincipal, hda, antecedentesPessoais, antecedentesFamiliares, habitosVida, userId } = req.body;
+      const anamnese = await prisma.anamnese.create({
+        data: { pacienteId, queixaPrincipal, hda, antecedentesPessoais, antecedentesFamiliares, habitosVida, userId }
+      });
+      res.json(anamnese);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/anamneses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.anamnese.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Consultas endpoints
+  app.get("/api/pacientes/:pacienteId/consultas", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const consultas = await prisma.consulta.findMany({
+        where: { pacienteId },
+        orderBy: { data: 'desc' }
+      });
+      res.json(consultas);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/pacientes/:pacienteId/consultas", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const { data, queixa, exameFisico, conduta, cid10, tuss, userId } = req.body;
+      const consulta = await prisma.consulta.create({
+        data: { pacienteId, data, queixa, exameFisico, conduta, cid10, tuss, userId }
+      });
+      res.json(consulta);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/consultas/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.consulta.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Exames endpoints
+  app.get("/api/pacientes/:pacienteId/exames", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const exames = await prisma.exame.findMany({
+        where: { pacienteId },
+        orderBy: { dataUpload: 'desc' }
+      });
+      res.json(exames);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/pacientes/:pacienteId/exames", async (req, res) => {
+    try {
+      const { pacienteId } = req.params;
+      const { nome, url, tipo, tamanho, userId, dataUpload } = req.body;
+      const exame = await prisma.exame.create({
+        data: { pacienteId, nome, url, tipo, tamanho: Number(tamanho), userId, dataUpload }
+      });
+      res.json(exame);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/exames/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.exame.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Agendamentos endpoints
+  app.get("/api/agendamentos", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const whereClause: any = {};
+      if (userId) whereClause.userId = String(userId);
+
+      const agendamentos = await prisma.agendamento.findMany({
+        where: whereClause,
+        orderBy: { data: 'asc' }
+      });
+      res.json(agendamentos);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/agendamentos", async (req, res) => {
+    try {
+      const { id, pacienteId, pacienteNome, data, duracao, tipo, status, local, observacoes, userId } = req.body;
+      const dataObj = { pacienteId, pacienteNome, data, duracao: Number(duracao), tipo, status, local, observacoes, userId };
+      if (id) {
+        const agendamento = await prisma.agendamento.update({
+          where: { id },
+          data: dataObj
+        });
+        res.json(agendamento);
+      } else {
+        const agendamento = await prisma.agendamento.create({
+          data: dataObj
+        });
+        res.json(agendamento);
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/agendamentos/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.agendamento.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Recibos endpoints
+  app.get("/api/recibos", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const whereClause: any = {};
+      if (userId) whereClause.userId = String(userId);
+
+      const recibos = await prisma.recibo.findMany({
+        where: whereClause,
+        orderBy: { data: 'desc' }
+      });
+      res.json(recibos);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/recibos/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const recibo = await prisma.recibo.findUnique({ where: { id } });
+      if (!recibo) return res.status(404).json({ error: "Recibo not found" });
+      res.json(recibo);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/recibos", async (req, res) => {
+    try {
+      const { id, pacienteId, pacienteNome, numero, data, valor, servico, prestador, tomador, formaPagamento, observacoes, retencaoINSS, retencaoIR, status, cancelledAt, userId } = req.body;
+      const dataObj = {
+        pacienteId,
+        pacienteNome,
+        numero,
+        data,
+        valor: Number(valor),
+        servico,
+        prestador,
+        tomador,
+        formaPagamento,
+        observacoes,
+        retencaoINSS: retencaoINSS ? Number(retencaoINSS) : null,
+        retencaoIR: retencaoIR ? Number(retencaoIR) : null,
+        status: status || "issued",
+        cancelledAt,
+        userId
+      };
+      if (id) {
+        const recibo = await prisma.recibo.update({
+          where: { id },
+          data: dataObj
+        });
+        res.json(recibo);
+      } else {
+        const recibo = await prisma.recibo.create({
+          data: dataObj
+        });
+        res.json(recibo);
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/recibos/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.recibo.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Guias endpoints (TissGuide)
+  app.get("/api/guias", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const whereClause: any = {};
+      if (userId) whereClause.userId = String(userId);
+
+      const guias = await prisma.tissGuide.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(guias);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/guias/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const guia = await prisma.tissGuide.findUnique({ where: { id } });
+      if (!guia) return res.status(404).json({ error: "Guia not found" });
+      res.json(guia);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/guias", async (req, res) => {
+    try {
+      const { id, userId, pacienteId, consultaId, tipoGuia, status, numeroGuia, numeroGuiaOperadora, numeroGuiaPrincipal, operadora, registroAns, planoSaude, numeroCarteira, validadeCarteira, pacienteNome, pacienteCpf, dataAtendimento, cid10, tuss, indicacaoClinica, conduta, caraterAtendimento, tipoConsulta, senhaAutorizacao, dataAutorizacao, validadeSenha, valorTotal, loteId, protocolo, motivoGlosa } = req.body;
+      const dataObj = {
+        userId,
+        pacienteId,
+        consultaId,
+        tipoGuia,
+        status,
+        numeroGuia,
+        numeroGuiaOperadora,
+        numeroGuiaPrincipal,
+        operadora,
+        registroAns,
+        planoSaude,
+        numeroCarteira,
+        validadeCarteira,
+        pacienteNome,
+        pacienteCpf,
+        dataAtendimento,
+        cid10,
+        tuss,
+        indicacaoClinica,
+        conduta,
+        caraterAtendimento,
+        tipoConsulta,
+        senhaAutorizacao,
+        dataAutorizacao,
+        validadeSenha,
+        valorTotal: valorTotal ? Number(valorTotal) : null,
+        loteId,
+        protocolo,
+        motivoGlosa
+      };
+      if (id) {
+        const guia = await prisma.tissGuide.update({
+          where: { id },
+          data: dataObj
+        });
+        res.json(guia);
+      } else {
+        const guia = await prisma.tissGuide.create({
+          data: dataObj
+        });
+        res.json(guia);
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/guias/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.tissGuide.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Invites endpoints
+  app.get("/api/invites", async (req, res) => {
+    try {
+      const { email, tenantId } = req.query;
+      const whereClause: any = {};
+      if (email) whereClause.email = String(email);
+      if (tenantId) whereClause.tenantId = String(tenantId);
+
+      const invites = await prisma.invite.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(invites);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/invites", async (req, res) => {
+    try {
+      const { email, tenantId, role, invitedBy } = req.body;
+      const invite = await prisma.invite.upsert({
+        where: { email },
+        update: { tenantId, role, invitedBy },
+        create: { email, tenantId, role, invitedBy }
+      });
+      res.json(invite);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/invites/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await prisma.invite.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
 
   // ---------- Mercado Pago endpoints ----------
 
@@ -167,7 +680,7 @@ async function startServer() {
     });
   });
 
-  // One-time Checkout Pro preference (returns init_point for redirect)
+  // One-time Checkout Pro preference
   app.post("/api/billing/create-preference", async (req, res) => {
     try {
       if (!mpClient) return res.status(503).json({ error: "Mercado Pago não configurado." });
@@ -185,7 +698,7 @@ async function startServer() {
             {
               id: plan,
               title: `Clinicafy — Plano ${planDef.name}`,
-              description: `Assinatura mensal do plano ${planDef.name}`,
+              description: `Assinatura do plano ${planDef.name}`,
               quantity: 1,
               currency_id: "BRL",
               unit_price: planDef.price,
@@ -205,8 +718,18 @@ async function startServer() {
         },
       });
 
-      if (firestore) {
-        await firestore.collection("subscriptions").doc(decoded.uid).set({
+      await prisma.subscription.upsert({
+        where: { userId: decoded.uid },
+        update: {
+          plan,
+          status: "pending",
+          mpPreferenceId: preference.id,
+          mpInitPoint: preference.init_point,
+          amount: planDef.price,
+          currency: "BRL",
+          payerEmail: decoded.email || null,
+        },
+        create: {
           userId: decoded.uid,
           plan,
           status: "pending",
@@ -215,10 +738,8 @@ async function startServer() {
           amount: planDef.price,
           currency: "BRL",
           payerEmail: decoded.email || null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-      }
+        }
+      });
 
       res.json({ initPoint: preference.init_point, preferenceId: preference.id });
     } catch (err) {
@@ -227,7 +748,7 @@ async function startServer() {
     }
   });
 
-  // Recurring subscription (preapproval) — best for SaaS
+  // Recurring subscription
   app.post("/api/billing/create-subscription", async (req, res) => {
     try {
       if (!mpClient) return res.status(503).json({ error: "Mercado Pago não configurado." });
@@ -259,20 +780,30 @@ async function startServer() {
         },
       });
 
-      if (firestore) {
-        await firestore.collection("subscriptions").doc(decoded.uid).set({
-          userId: decoded.uid,
+      const status = mapPreapprovalStatus(preapproval.status);
+
+      await prisma.subscription.upsert({
+        where: { userId: decoded.uid },
+        update: {
           plan,
-          status: mapPreapprovalStatus(preapproval.status),
+          status,
           mpPreapprovalId: preapproval.id,
           mpInitPoint: preapproval.init_point,
           amount: planDef.price,
           currency: "BRL",
           payerEmail: email,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-      }
+        },
+        create: {
+          userId: decoded.uid,
+          plan,
+          status,
+          mpPreapprovalId: preapproval.id,
+          mpInitPoint: preapproval.init_point,
+          amount: planDef.price,
+          currency: "BRL",
+          payerEmail: email,
+        }
+      });
 
       res.json({ initPoint: preapproval.init_point, preapprovalId: preapproval.id });
     } catch (err) {
@@ -283,12 +814,11 @@ async function startServer() {
 
   app.post("/api/billing/cancel-subscription", async (req, res) => {
     try {
-      if (!mpClient || !firestore) return res.status(503).json({ error: "Serviço indisponível." });
+      if (!mpClient) return res.status(503).json({ error: "Serviço indisponível." });
       const decoded = await verifyAuth(req);
       if (!decoded) return res.status(401).json({ error: "Não autenticado." });
 
-      const subSnap = await firestore.collection("subscriptions").doc(decoded.uid).get();
-      const sub = subSnap.data();
+      const sub = await prisma.subscription.findUnique({ where: { userId: decoded.uid } });
       if (!sub?.mpPreapprovalId) return res.status(404).json({ error: "Assinatura não encontrada." });
 
       await new PreApproval(mpClient).update({
@@ -296,14 +826,15 @@ async function startServer() {
         body: { status: "cancelled" },
       });
 
-      await firestore.collection("subscriptions").doc(decoded.uid).set({
-        status: "cancelled",
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
-      await firestore.collection("users").doc(decoded.uid).set({
-        subscriptionStatus: "cancelled",
-        plan: "basico",
-      }, { merge: true });
+      await prisma.subscription.update({
+        where: { userId: decoded.uid },
+        data: { status: "cancelled" }
+      });
+
+      await prisma.userProfile.update({
+        where: { uid: decoded.uid },
+        data: { subscriptionStatus: "cancelled", plan: "basico" }
+      });
 
       res.json({ ok: true });
     } catch (err) {
@@ -329,8 +860,7 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`  Mercado Pago: ${mpClient ? "ENABLED" : "DISABLED (set MP_ACCESS_TOKEN)"}`);
-    console.log(`  Firestore Admin: ${firestore ? "ENABLED" : "DISABLED"}`);
+    console.log(`  Mercado Pago: ${mpClient ? "ENABLED" : "DISABLED"}`);
   });
 }
 
